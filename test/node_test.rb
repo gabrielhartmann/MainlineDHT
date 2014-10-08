@@ -1,6 +1,6 @@
-require_relative '../test_helper'
-require_relative '../../lib/kademlia/node'
-require_relative '../../lib/kademlia/routing_table'
+require_relative 'test_helper'
+require_relative '../lib/kademlia/node'
+require_relative '../lib/kademlia/routing_table'
 
 describe Kademlia do
 
