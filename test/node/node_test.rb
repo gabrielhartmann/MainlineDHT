@@ -1,8 +1,12 @@
-require_relative "../test_helper"
+require_relative '../test_helper'
+require_relative '../../lib/kademlia/node'
+require_relative '../../lib/kademlia/routing_table'
 
-class TestPackage < MiniTest::Unit::TestCase
+describe Kademlia do
 
-  def test
-    assert_equal 10, Array.new(10).size
+  it "it must have a routing table" do
+    node = Node.new
+    node.routing_table.must_be_instance_of RoutingTable
   end
+
 end
