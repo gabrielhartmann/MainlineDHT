@@ -1,7 +1,7 @@
 class Node
-  attr_accessor :routing_table
+  attr_reader :routing_table
 
   def initialize
-    self.routing_table = RoutingTable.new
+    @routing_table = RoutingTable.new
   end
 end
