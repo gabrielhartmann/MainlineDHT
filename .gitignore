@@ -36,3 +36,6 @@ build/
 # ignore ctags files
 tags
 .tags
+
+# ignore swap files
+*.swp

@@ -1,7 +1,11 @@
 class Node
-  attr_reader :routing_table
+  attr_reader :peer_id
+  attr_reader :ip
+  attr_reader :port
 
-  def initialize
-    @routing_table = RoutingTable.new
+  def initialize (peer_id, ip, port)
+    @peer_id = peer_id
+    @ip = ip
+    @port = port
   end
 end
