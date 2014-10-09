@@ -7,7 +7,7 @@ class RoutingTable
 
   def initialize (id_space = Default_Id_Space)
     @id_space = id_space
-    @bucket_list = Array.new(1) {Bucket.new}
+    @bucket_list = Array.new(1) {Bucket.new(id_space)}
   end
 
   def bucket_count
