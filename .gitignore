@@ -37,5 +37,6 @@ build/
 tags
 .tags
 
-# ignore swap files
-*.swp
+# ignore vim files
+*.sw*
+*.vim

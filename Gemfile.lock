@@ -6,12 +6,14 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    bencode (0.8.2)
     rake (10.3.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  bencode (~> 0.8.2)
   bundler (~> 1.7)
   kademlia!
   rake (~> 10.0)
