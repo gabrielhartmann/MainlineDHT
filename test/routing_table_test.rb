@@ -13,8 +13,8 @@ describe RoutingTable do
     routing_table.id_space.must_equal id_space
   end
 
-  it "can report the number of buckets it has" do
+  it "it must have one bucket when initially created" do
     routing_table = RoutingTable.new
-    routing_table.bucket_count.must_equal 1
+    routing_table.buckets.length.must_equal 1
   end
 end
