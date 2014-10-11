@@ -10,12 +10,15 @@ class RoutingTable
     @@Default_Id_Space
   end
 
-  def initialize (id_space = @@Default_Id_Space)
+  def initialize (local_node, id_space = @@Default_Id_Space)
+    raise RoutingTableTypeError, "id_space must be a Range" unless id_space.class == Range
     @id_space = id_space
     @buckets = Array.new(1) {Bucket.new(id_space)}
+    add(local_node)
   end
   
   def add (node)
+    raise RoutingTableTypeError, "node must be a Node" unless node.class == Node
     @buckets.each { |b| b.add(node) if b.id_range.include?(node.peer_id) }
   end
 
@@ -24,4 +27,7 @@ class RoutingTable
     @buckets.each { |b| nodes.push(*b.nodes) }
   end
 
+end
+
+class RoutingTableTypeError < StandardError
 end
