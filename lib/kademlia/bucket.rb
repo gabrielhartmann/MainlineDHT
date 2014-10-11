@@ -1,8 +1,10 @@
 class Bucket
   attr_reader :id_range
+  attr_reader :nodes
 
   def initialize(id_range)
     @id_range = id_range
+    @nodes = Array.new
   end
 
   def split
@@ -14,5 +16,9 @@ class Bucket
     high_bucket = Bucket.new(high_range)
 
     return low_bucket, high_bucket
+  end
+
+  def add (node)
+    @nodes << node
   end
 end
