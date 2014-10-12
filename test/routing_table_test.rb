@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require_relative 'node_test_helper'
 require_relative '../lib/kademlia/id'
 require_relative '../lib/kademlia/node'
 require_relative '../lib/kademlia/routing_table'
@@ -37,5 +38,31 @@ describe RoutingTable do
       routing_table.add(42)
     rescue RoutingTableTypeError
     end
+  end
+
+  it "must split a bucket when a bucket hits capacity and contains the local node" do
+    routing_table = RoutingTable.new(local_node)
+
+    one_extra_time = Bucket.k_factor + 1
+    one_extra_time.times {routing_table.add(Node.random)}
+
+    (routing_table.buckets.length > 1).must_equal true
+  end
+
+  it "must be able to add 1000 nodes" do
+      routing_table = RoutingTable.new(local_node)
+      1000.times do |i|
+	routing_table.add(Node.random)
+      end
+
+      added_nodes_count = routing_table.nodes.length
+      bucket_count = routing_table.buckets.length
+      
+      valid_ratio = bucket_count * Bucket.k_factor > added_nodes_count
+      valid_ratio.must_equal true
+
+      routing_table.buckets.each do |b|
+	(b.nodes.length <= Bucket.k_factor).must_equal true
+      end
   end
 end
