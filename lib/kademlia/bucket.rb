@@ -36,4 +36,8 @@ class Bucket
 
     @nodes << node 
   end
+
+  def include_local_node?
+    return id_range.include?(@local_node.peer_id)
+  end
 end

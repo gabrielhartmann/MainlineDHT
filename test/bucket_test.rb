@@ -40,4 +40,9 @@ describe Bucket do
 
     raise "A BucketCapacityError should have been raised."
   end
+
+  it "can identify whether the local node lies within its ID range" do
+    b = Bucket.new(local_node, id_range)
+    b.include_local_node?.must_equal true
+  end
 end
