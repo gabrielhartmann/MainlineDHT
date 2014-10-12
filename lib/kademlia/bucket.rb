@@ -30,14 +30,23 @@ class Bucket
   end
 
   def add (node)
-    unless (@nodes.length < @@k_factor)
-      raise BucketCapacityError, "k_factor is #{@@k_factor} with #{@nodes.length} nodes"
-    end
-
+    validate_node(node)  
     @nodes << node 
   end
 
   def include_local_node?
     return id_range.include?(@local_node.peer_id)
+  end
+
+  private
+
+  def validate_node (node)
+    unless (@nodes.length < @@k_factor)
+      raise BucketCapacityError, "k_factor is #{@@k_factor} with #{@nodes.length} nodes"
+    end
+
+    if (@nodes.include?(node))
+	raise BucketDuplicateError, "node #{node} already exists in this bucket"
+    end
   end
 end

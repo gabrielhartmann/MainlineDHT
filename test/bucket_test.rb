@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require_relative 'node_test_helper'
 require_relative '../lib/kademlia/bucket'
 require_relative '../lib/kademlia/id'
 require_relative '../lib/kademlia/node'
@@ -32,7 +33,7 @@ describe Bucket do
     too_many_nodes = Bucket.k_factor+1
 
     begin
-      too_many_nodes.times {b.add(local_node)}
+      too_many_nodes.times {b.add(Node.random)}
     rescue BucketCapacityError
       b.nodes.length.must_equal Bucket.k_factor
       return
@@ -44,5 +45,17 @@ describe Bucket do
   it "can identify whether the local node lies within its ID range" do
     b = Bucket.new(local_node, id_range)
     b.include_local_node?.must_equal true
+  end
+
+  it "cannot add duplicate nodes" do 
+    b = Bucket.new(local_node, id_range)
+
+    begin
+      2.times { b.add(local_node) }
+    rescue BucketDuplicateError
+      return
+    end
+
+    raise "A BucketDuplicateError should have been raised."
   end
 end
