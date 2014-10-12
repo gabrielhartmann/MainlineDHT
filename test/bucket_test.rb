@@ -58,4 +58,20 @@ describe Bucket do
 
     raise "A BucketDuplicateError should have been raised."
   end
+
+  it "cannot add nodes which are internally identical" do
+    b = Bucket.new(local_node, id_range)
+    
+    node_a = Node.new(1, "127.0.0.1", 6881)
+    node_b = Node.new(1, "127.0.0.1", 6881)
+
+    begin
+      b.add(node_a)
+      b.add(node_b)
+    rescue BucketDuplicateError
+      return
+    end
+
+    raise "A BucketDuplicateError should have been raise."
+  end
 end
