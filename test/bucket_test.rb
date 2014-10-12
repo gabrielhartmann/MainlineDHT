@@ -15,9 +15,14 @@ describe Bucket do
 
   it "can be split into two buckets" do
     b = Bucket.new(local_node, id_range)
+
+    Bucket.k_factor.times {b.add(Node.random)}
     bucket_low, bucket_high = b.split
+
     bucket_low.id_range.must_equal(0..2**160/2)
     bucket_high.id_range.must_equal(2**160/2+1..2**160)
+
+    b.nodes.length.must_equal bucket_low.nodes.length + bucket_high.nodes.length 
   end
 
   it "can have Nodes added to it" do
