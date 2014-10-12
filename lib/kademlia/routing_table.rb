@@ -13,8 +13,7 @@ class RoutingTable
   def initialize (local_node, id_space = @@Default_Id_Space)
     raise RoutingTableTypeError, "id_space must be a Range" unless id_space.class == Range
     @id_space = id_space
-    @buckets = Array.new(1) {Bucket.new(id_space)}
-    add(local_node)
+    @buckets = Array.new(1) {Bucket.new(local_node, id_space)}
   end
   
   def add (node)
