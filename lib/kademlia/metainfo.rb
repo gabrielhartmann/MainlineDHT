@@ -2,7 +2,7 @@ require 'bencode'
 require 'cgi'
 require 'digest/sha1'
 
-class Tracker
+class Metainfo 
   attr_reader :metainfo
   attr_reader :hashed_info
 
