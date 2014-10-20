@@ -1,0 +1,2 @@
+class NodeTypeError < StandardError
+end

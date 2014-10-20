@@ -6,3 +6,6 @@ end
 
 class RoutingTableCorruptionError < StandardError
 end
+
+class RoutingTableRangeError < StandardError
+end

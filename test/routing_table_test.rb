@@ -33,11 +33,7 @@ describe RoutingTable do
 
   it "must fail to add non-nodes" do
     routing_table = RoutingTable.new(local_node)
-
-    begin
-      routing_table.add(42)
-    rescue RoutingTableTypeError
-    end
+    assert_raises(RoutingTableTypeError) {routing_table.add(42)}
   end
 
   it "must split a bucket when a bucket hits capacity and contains the local node" do
@@ -64,5 +60,10 @@ describe RoutingTable do
       routing_table.buckets.each do |b|
 	(b.nodes.length <= Bucket.k_factor).must_equal true
       end
+  end
+
+  it "must fail to add nodes with invalid peer ids" do
+    routing_table = RoutingTable.new(local_node)
+    assert_raises(RoutingTableRangeError) { routing_table.add(Node.new(-1, "127.0.0.1", 6881)) }
   end
 end
