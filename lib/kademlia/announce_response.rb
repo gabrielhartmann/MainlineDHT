@@ -12,7 +12,6 @@ class AnnounceResponse
     @incomplete = decoded_response['incomplete']
     @interval = decoded_response['interval']
     @peers = decode_peers(decoded_response['peers'])
-#    @peers = decoded_response['peers']
   end
 
   def decode_peers(encoded_peers)
