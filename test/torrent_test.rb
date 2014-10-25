@@ -8,12 +8,6 @@ describe Torrent do
 
   it "can get a list of peers" do
     t = Torrent.new(File.dirname(__FILE__) + '/ubuntu.torrent')
-    response = t.announce_request
-    (response.peers.length > 1).must_equal true
-  end
-
-  it "can complete a handshake with a peer" do
-    t = Torrent.new(File.dirname(__FILE__) + '/ubuntu.torrent')
-    t.shake_hands
+    (t.peers.length > 1).must_equal true
   end
 end

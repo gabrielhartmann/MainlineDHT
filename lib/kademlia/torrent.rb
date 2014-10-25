@@ -6,6 +6,9 @@ require_relative 'metainfo'
 require_relative 'node'
 
 class Torrent
+  attr_reader :hashed_info
+  attr_reader :peers
+
   def initialize(torrent_file)
     @metainfo = Metainfo.new(torrent_file)
     @hashed_info = Digest::SHA1.digest(@metainfo.info.bencode)
@@ -19,39 +22,8 @@ class Torrent
     @compact = 1
     @support_crypto = 1
     @event = "started"
-  end
 
-  def announce_request 
-    uri = URI(announce_url)
-    response = Net::HTTP.get(uri)
-    return AnnounceResponse.new(response)
-  end
-
-  def shake_hands
-    response = announce_request
-    peer = response.peers.first
-    s = TCPSocket.open(peer.ip, peer.port)
-    s.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
-    s.send("#{@hashed_info}#{@peer_id}", 0)
-
-    len = s.recv(1)[0]
-    puts "length: #{len.inspect}"
-
-    protocol = s.recv(19)
-    puts "protocol: #{protocol.inspect}"
-
-    reserved = s.recv(8)
-    puts "reserved: #{reserved.inspect}" 
-
-    their_hash = s.recv(20)
-    puts "their info hash: #{their_hash.inspect}"
-    
-    peerid = s.recv(20)
-    puts "their peer_id: #{peerid}"
-
-    # s.print()
-
-    s.close
+    @peers = announce_request.peers
   end
 
 private
@@ -67,6 +39,12 @@ private
     "&compact=#{@compact}"\
     "&supportcrypt=#{@support_crypt}"\
     "&event=#{@event}"
+  end
+
+  def announce_request 
+    uri = URI(announce_url)
+    response = Net::HTTP.get(uri)
+    return AnnounceResponse.new(response, @hashed_info, @peer_id)
   end
 
 end

@@ -13,4 +13,8 @@ class HandShakeResponse
     @peer_id = peer_id
   end
 
+  def to_s
+    "length: #{@length.inspect} protocol: #{@protocol} reserved: #{@reserved.inspect} info_hash: #{@info_hash.inspect} peer_id: #{@peer_id.inspect}"
+  end
+
 end
