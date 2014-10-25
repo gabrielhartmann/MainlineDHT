@@ -1,4 +1,5 @@
 require 'net/http'
+require 'socket'
 require_relative 'announce_response'
 require_relative 'id'
 require_relative 'metainfo'
@@ -24,7 +25,34 @@ class Torrent
     uri = URI(announce_url)
     response = Net::HTTP.get(uri)
     return AnnounceResponse.new(response)
- end
+  end
+
+  def shake_hands
+    response = announce_request
+    peer = response.peers.first
+    s = TCPSocket.open(peer.ip, peer.port)
+    s.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
+    s.send("#{@hashed_info}#{@peer_id}", 0)
+
+    len = s.recv(1)[0]
+    puts "length: #{len.inspect}"
+
+    protocol = s.recv(19)
+    puts "protocol: #{protocol.inspect}"
+
+    reserved = s.recv(8)
+    puts "reserved: #{reserved.inspect}" 
+
+    their_hash = s.recv(20)
+    puts "their info hash: #{their_hash.inspect}"
+    
+    peerid = s.recv(20)
+    puts "their peer_id: #{peerid}"
+
+    # s.print()
+
+    s.close
+  end
 
 private
   def announce_url

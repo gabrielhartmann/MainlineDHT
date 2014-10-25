@@ -19,10 +19,10 @@ class RoutingTable
   
   def add (node)
     raise RoutingTableTypeError, "node must be a Node" unless node.is_a?(Node)
-    raise RoutingTableRangeError, "node must fall within the default id space" unless @@Default_Id_Space.include?(node.peer_id)
+    raise RoutingTableRangeError, "node must fall within the default id space" unless @@Default_Id_Space.include?(node.id)
 
     bucket = nil
-    @buckets.each { |b| bucket = b if b.id_range.include?(node.peer_id) }
+    @buckets.each { |b| bucket = b if b.id_range.include?(node.id) }
 
     if (bucket)
       if (bucket.has_space?)

@@ -29,9 +29,9 @@ class Bucket
     high_bucket = Bucket.new(@local_node, high_range)
 
     @nodes.each do |n|
-      if (low_bucket.id_range.include?(n.peer_id))
+      if (low_bucket.id_range.include?(n.id))
 	low_bucket.add(n)
-      elsif (high_bucket.id_range.include?(n.peer_id))
+      elsif (high_bucket.id_range.include?(n.id))
 	high_bucket.add(n)
       else
 	raise BucketCorruptionError, "All nodes must fit into either the low or high bucket."
@@ -52,7 +52,7 @@ class Bucket
   end
 
   def include_local_node?
-    return id_range.include?(@local_node.peer_id)
+    return id_range.include?(@local_node.id)
   end
 
   private
@@ -67,8 +67,8 @@ class Bucket
       raise BucketDuplicateError, "node #{node} already exists in this bucket"
     end
 
-    if (!id_range.include?(node.peer_id))
-      raise BucketRangeError, "node ID #{node.peer_id} is outside this bucket's range #{id_range}"
+    if (!id_range.include?(node.id))
+      raise BucketRangeError, "node ID #{node.id} is outside this bucket's range #{id_range}"
     end
   end
 
