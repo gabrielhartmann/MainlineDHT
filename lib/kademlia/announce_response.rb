@@ -1,4 +1,5 @@
 require 'bencode'
+require_relative 'peer'
 
 class AnnounceResponse
   attr_reader :complete
