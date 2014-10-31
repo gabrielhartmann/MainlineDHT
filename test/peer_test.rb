@@ -11,8 +11,8 @@ describe Peer do
   id_length = 20
   info_hash_length = id_length
   
-  test_peer = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
-
+#  test_peer = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
+  test_peer = Peer.default
 
   it "must create an id 20 bytes long if none is specified" do
     test_peer.id.length.must_equal 20
@@ -34,7 +34,14 @@ describe Peer do
   end
 
   it "must fail to determine whether an uninitialized Peer supports DHT" do
-    assert_raises(InvalidPeerError) { test_peer.supports_dht? }
+    p = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
+    assert_raises(InvalidPeerError) { p.supports_dht? }
+  end
+
+  it "must be able to read messages from the wire" do
+    p = Peer.default
+    p.shake_hands
+    p.read_next_message.must_equal 1
   end
 
 end
