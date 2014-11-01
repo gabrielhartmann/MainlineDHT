@@ -41,7 +41,8 @@ describe Peer do
   it "must be able to read messages from the wire" do
     p = Peer.default
     p.shake_hands
-    p.read_next_message.must_equal 1
+    message = p.read_next_message
+    puts message.inspect
   end
 
 end

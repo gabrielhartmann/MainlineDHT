@@ -4,7 +4,7 @@ class PeerMessage
   attr_reader :length
   attr_reader :id
 
-  def intitialize(length, id)
+  def initialize(length, id)
     @length = length
     @id = id
   end

@@ -5,13 +5,10 @@ require_relative 'messages'
 
 class Peer
   attr_accessor :id
-  
   attr_accessor :am_choking
   attr_accessor :am_interested
   attr_accessor :peer_choking
   attr_accessor :peer_interested
-
-
 
   @@dht_bitmask = 0x0000000000000001
 
@@ -37,11 +34,11 @@ class Peer
     @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
     @socket.send("#{@hashed_info}#{@local_peer_id}", 0)
 
-    length = @socket.recv(1)[0]
-    protocol = @socket.recv(19)
-    reserved = @socket.recv(8)
-    info_hash = @socket.recv(20)
-    peer_id = @socket.recv(20)
+    length = @socket.read(1)[0]
+    protocol = @socket.read(19)
+    reserved = @socket.read(8)
+    info_hash = @socket.read(20)
+    peer_id = @socket.read(20)
 
     @handshake_response = HandShakeResponse.new(length, protocol, reserved, info_hash, peer_id)
     set_id(@handshake_response.peer_id)
@@ -54,27 +51,25 @@ class Peer
     raise PeerProtocolError, "Invalid message length." unless length >= 0
     
     if (length == 0)
-      return KeepAliveMessage.new
+      message = KeepAliveMessage.new
     else
       id = @socket.read(1).unpack("C").first
 
-      message = PeerMessage.new(length, id)
-      puts "message.id = #{message.id}"
-      puts "message.length = #{message.length}"
-
-      if (message.length > 1)
-	payload = @socket.read(message.length - 1)
+      if (length == 1)
+	message = PeerMessage.new(length, id)
+	puts "message.id = #{message.id}"
+	puts "message.length = #{message.length}"
+      else
+	payload = @socket.read(length - 1)
 	message = PayloadMessage.new(length, id, payload)
 	puts "message.id = #{message.id}"
 	puts "message.length = #{message.length}"
 	puts "message.payload = #{message.payload.inspect}"
       end
-
-
     end
 
+    return message
   end
-  
 
 private
 
