@@ -1,5 +1,6 @@
 require_relative 'peer_errors'
 require_relative 'handshake_response'
+require_relative 'messages'
 require_relative 'peer_socket'
 
 class Peer
@@ -21,6 +22,7 @@ class Peer
     @port = port
     @hashed_info = hashed_info
     @local_peer_id = local_peer_id
+    @socket = PeerSocket.open(self)
   end
 
   def to_s
@@ -33,10 +35,12 @@ class Peer
   end
 
   def shake_hands
-     @socket = PeerSocket.new(self)
-     @handshake_response = @socket.shake_hands
-     set_id(@handshake_response.peer_id)
-     return @handshake_response
+    # Only shake hands once
+    return if @handshake_response != nil
+    
+    @handshake_response = @socket.shake_hands
+    set_id(@handshake_response.peer_id)
+    return @handshake_response
   end
 
 private

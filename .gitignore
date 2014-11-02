@@ -40,3 +40,4 @@ tags
 # ignore vim files
 *.sw*
 *.vim
+*.orig

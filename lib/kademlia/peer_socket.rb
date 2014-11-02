@@ -3,23 +3,49 @@ require_relative 'handshake_response'
 
 class PeerSocket
   def initialize(peer)
-    @peer = peer
+    @peer = peer 
   end
 
   def shake_hands
-    s = TCPSocket.open(@peer.ip, @peer.port)
+    @socket = TCPSocket.open(@peer.ip, @peer.port)
+    @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
+    @socket.send("#{@peer.hashed_info}#{@peer.local_peer_id}", 0)
 
-    s.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
-    s.send("#{@peer.hashed_info}#{@peer.local_peer_id}", 0)
-
-    length = s.recv(1)[0]
-    protocol = s.recv(19)
-    reserved = s.recv(8)
-    info_hash = s.recv(20)
-    peer_id = s.recv(20)
-
-    s.close
+    length = @socket.read(1)[0]
+    protocol = @socket.read(19)
+    reserved = @socket.read(8)
+    info_hash = @socket.read(20)
+    peer_id = @socket.read(20)
 
     HandShakeResponse.new(length, protocol, reserved, info_hash, peer_id)
+  end
+
+  def read
+    length = @socket.read(4).unpack("L>").first
+    raise PeerProtocolError, "Invalid message length." unless length >= 0
+
+    if (length == 0)
+      message = KeepAliveMessage.new
+    else
+      id = @socket.read(1).unpack("C").first
+
+      if (length == 1)
+	message = PeerMessage.new(length, id)
+	puts "message.id = #{message.id}"
+	puts "message.length = #{message.length}"
+      else
+	payload = @socket.read(length - 1)
+	message = PayloadMessage.new(length, id, payload)
+	puts "message.id = #{message.id}"
+	puts "message.length = #{message.length}"
+	puts "message.payload = #{message.payload.inspect}"
+      end
+    end
+
+    return message
+  end
+
+  def self.open(peer)
+    PeerSocket.new(peer)
   end
 end
