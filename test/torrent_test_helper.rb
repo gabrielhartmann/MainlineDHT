@@ -1,4 +1,4 @@
-require_relative '../lib/kademlia/torrent.rb'
+require_relative '../lib/kademlia/torrent'
 
 class Torrent
   @@default_torrent = nil

@@ -36,11 +36,15 @@ class Peer
 
   def shake_hands
     # Only shake hands once
-    return if @handshake_response != nil
+    return @handshake_response if @handshake_response != nil
     
     @handshake_response = @socket.shake_hands
     set_id(@handshake_response.peer_id)
     return @handshake_response
+  end
+
+  def read_next_message
+    @socket.read
   end
 
 private

@@ -31,14 +31,9 @@ class PeerSocket
 
       if (length == 1)
 	message = PeerMessage.new(length, id)
-	puts "message.id = #{message.id}"
-	puts "message.length = #{message.length}"
       else
 	payload = @socket.read(length - 1)
 	message = PayloadMessage.new(length, id, payload)
-	puts "message.id = #{message.id}"
-	puts "message.length = #{message.length}"
-	puts "message.payload = #{message.payload.inspect}"
       end
     end
 
