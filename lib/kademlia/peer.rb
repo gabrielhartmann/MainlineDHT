@@ -21,7 +21,6 @@ class Peer
     @port = port
     @hashed_info = hashed_info
     @local_peer_id = local_peer_id
-    @socket = TCPSocket.open(@ip, @port)
   end
 
   def to_s
