@@ -50,6 +50,10 @@ class PeerMessage
       RequestMessage.new(payload)
     when 7
       PieceMessage.new(length, payload)
+    when 8
+      CancelMessage.new(payload)
+    when 9
+      PortMessage.new(payload)
     else
       raise MessageError, "Unknown payload message id: #{id}"
     end
@@ -129,5 +133,22 @@ class PieceMessage < PayloadMessage
   def initialize(length, payload)
     super(length, 7, payload)
     @index, @begin, @block = payload.unpack("L>L>C")
+  end
+end
+
+class CancelMessage < PayloadMessage
+  attr_reader :index
+  attr_reader :begin
+  attr_reader :length
+
+  def initialize(payload)
+    super(13, 8, payload)
+    @index, @begin, @length = payload.unpack("L>L>L>")
+  end
+end
+
+class PortMessage < PayloadMessage
+  def initialize(payload)
+    super(3, 9, payload)
   end
 end

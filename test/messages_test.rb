@@ -62,4 +62,16 @@ describe PeerMessage do
 
     message = PeerMessage.Create(length, id, only_payload)
   end
+
+  it "can create a cancel message" do
+    payload = [1, 1, 1].pack("L>L>L>")
+    message = PeerMessage.Create(13, 8, payload)
+    message.class.must_equal CancelMessage
+  end
+
+  it "can create a port message" do
+    payload = [6881].pack("s>")
+    message = PeerMessage.Create(3, 9, payload)
+    message.class.must_equal PortMessage 
+  end
 end
