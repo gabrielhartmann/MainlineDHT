@@ -1,15 +1,18 @@
 require 'socket'
 require_relative 'peer_errors'
 require_relative 'handshake_response'
+require_relative 'peer_socket'
 
 class Peer
-  attr_accessor :id
-  
-  attr_accessor :am_choking
-  attr_accessor :am_interested
-  attr_accessor :peer_choking
-  attr_accessor :peer_interested
-
+  attr_reader :id
+  attr_reader :am_choking
+  attr_reader :am_interested
+  attr_reader :peer_choking
+  attr_reader :peer_interested
+  attr_reader :ip
+  attr_reader :port
+  attr_reader :hashed_info
+  attr_reader :local_peer_id
 
   @@dht_bitmask = 0x0000000000000001
 
@@ -31,26 +34,11 @@ class Peer
   end
 
   def shake_hands
-    s = TCPSocket.open(@ip, @port)
-    s.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
-    s.send("#{@hashed_info}#{@local_peer_id}", 0)
-
-    length = s.recv(1)[0]
-    protocol = s.recv(19)
-    reserved = s.recv(8)
-    info_hash = s.recv(20)
-    peer_id = s.recv(20)
-
-    s.close
-
-    @handshake_response = HandShakeResponse.new(length, protocol, reserved, info_hash, peer_id)
-    set_id(@handshake_response.peer_id)
-
-    return @handshake_response
+     @socket = PeerSocket.new(self)
+     @handshake_response = @socket.shake_hands
+     set_id(@handshake_response.peer_id)
+     return @handshake_response
   end
-
-
-  
 
 private
 
