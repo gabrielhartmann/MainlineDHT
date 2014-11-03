@@ -26,6 +26,7 @@ class Info
   attr_reader :pieces
   attr_reader :info_raw
   attr_reader :length
+  attr_reader :name
 
   @@hash_length = 20
 
@@ -34,6 +35,7 @@ class Info
     @piece_length = info['piece length']
     @pieces = read_pieces
     @length = info['length']
+    @name = info['name']
   end
 
   def read_pieces
