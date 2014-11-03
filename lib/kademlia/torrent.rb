@@ -11,13 +11,13 @@ class Torrent
 
   def initialize(torrent_file)
     @metainfo = Metainfo.new(torrent_file)
-    @hashed_info = Digest::SHA1.digest(@metainfo.info.bencode)
+    @hashed_info = Digest::SHA1.digest(@metainfo.info_raw.bencode)
     @url_info = CGI.escape(@hashed_info)
     @peer_id = peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join unless peer_id
     @port = 51413
     @uploaded = 0
     @downloaded = 0
-    @left = @metainfo.info['length']
+    @left = @metainfo.info.length
     @numwant = 50
     @compact = 1
     @support_crypto = 1

@@ -24,20 +24,15 @@ class PeerSocket
     length = @socket.read(4).unpack("L>").first
     raise PeerProtocolError, "Invalid message length." unless length >= 0
 
-    if (length == 0)
-      message = KeepAliveMessage.new
-    else
+    if (length >= 1)
       id = @socket.read(1).unpack("C").first
 
-      if (length == 1)
-	message = PeerMessage.new(length, id)
-      else
+      if (length > 1)
 	payload = @socket.read(length - 1)
-	message = PayloadMessage.new(length, id, payload)
       end
     end
 
-    return message
+    PeerMessage.Create(length, id, payload)
   end
 
   def self.open(peer)
