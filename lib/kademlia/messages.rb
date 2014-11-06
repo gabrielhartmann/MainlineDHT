@@ -129,24 +129,20 @@ end
 class HaveMessage < PayloadMessage
   attr_reader :piece_index
   def initialize(payload)
-    @piece_index = payload.unpack("L>").first
+    super(5, 4, payload)
+    @piece_index = @payload.unpack("L>").first
     raise MessageError, "Invalid piece index: #{@piece_index}" unless @piece_index >= 0
-    super(5, 4, piece_index)
   end
 end
 
 class BitfieldMessage < PayloadMessage
-  def initialize(length, bitfield)
+  def initialize(length, payload)
+    super(length, 5, payload)
     raise MessageError, "A bitfield message must have a length of at least 2, not #{length}" if length < 2 
-    super(length, 5, bitfield)
   end
 end
 
 class RequestMessage < BlockMessage
-  attr_reader :index
-  attr_reader :begin
-  attr_reader :length
-
   def initialize(payload)
     super(6, payload)
   end
@@ -164,10 +160,6 @@ class PieceMessage < PayloadMessage
 end
 
 class CancelMessage < BlockMessage
-  attr_reader :index
-  attr_reader :begin
-  attr_reader :length
-
   def initialize(payload)
     super(8, payload)
   end
