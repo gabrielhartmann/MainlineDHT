@@ -15,14 +15,19 @@ class PeerMessage
     wire_message = length + id
   end
 
-  def self.Create(length=0, id=nil, payload=nil)
+  def self.Create(length=0, payload=nil)
+    if (payload)
+      raise MessageError, "Payload length must be greater than 0, not #{payload.length}" if payload.length < 1
+      id = payload[0].unpack("C").first
+    end
+
     case length
     when 0
-      return KeepAliveMessage.new if length == 0
+      return KeepAliveMessage.new
     when 1
-      raise MessageError, "Messages of length #{length} must not have a payload" if payload != nil
       CreateChokeInterestMessage(id)
     when 2..Float::INFINITY
+      payload = payload[1..payload.length-1]
       CreatePayloadMessage(length, id, payload)
     else
       raise MessageError, "Invalid message length: #{length}"
@@ -122,8 +127,10 @@ class NotInterestedMessage < PeerMessage
 end
 
 class HaveMessage < PayloadMessage
-  def initialize(piece_index)
-    raise MessageError, "Invalid piece index: #{piece_index}" unless piece_index >= 0
+  attr_reader :piece_index
+  def initialize(payload)
+    @piece_index = payload.unpack("L>").first
+    raise MessageError, "Invalid piece index: #{@piece_index}" unless @piece_index >= 0
     super(5, 4, piece_index)
   end
 end
