@@ -9,6 +9,12 @@ class PeerMessage
     @id = id
   end
 
+  def to_wire
+    length = [@length].pack("L>")
+    id = [@id].pack("C") if @id
+    wire_message = length + id
+  end
+
   def self.Create(length=0, id=nil, payload=nil)
     case length
     when 0
@@ -67,6 +73,22 @@ class PayloadMessage < PeerMessage
     super(length, id)
     @payload = payload
   end
+
+  def to_wire
+    peer_wire_message = super.to_wire
+    wire_message = peer_wire_message + payload
+  end
+end
+
+class BlockMessage < PayloadMessage
+  attr_reader :index
+  attr_reader :begin
+  attr_reader :length
+
+  def initialize(id, payload)
+    super(13, id, payload)
+    @index, @begin, @length = payload.unpack("L>L>L>")
+  end
 end
 
 class KeepAliveMessage < PeerMessage
@@ -113,17 +135,15 @@ class BitfieldMessage < PayloadMessage
   end
 end
 
-class RequestMessage < PayloadMessage
+class RequestMessage < BlockMessage
   attr_reader :index
   attr_reader :begin
   attr_reader :length
 
   def initialize(payload)
-    super(13, 6, payload)
-    @index, @begin, @length = payload.unpack("L>L>L>")
+    super(6, payload)
   end
 end
-
 
 class PieceMessage < PayloadMessage
   attr_reader :index
@@ -132,18 +152,17 @@ class PieceMessage < PayloadMessage
     
   def initialize(length, payload)
     super(length, 7, payload)
-    @index, @begin, @block = payload.unpack("L>L>C")
+    @index, @begin, @block = payload.unpack("L>L>C*")
   end
 end
 
-class CancelMessage < PayloadMessage
+class CancelMessage < BlockMessage
   attr_reader :index
   attr_reader :begin
   attr_reader :length
 
   def initialize(payload)
-    super(13, 8, payload)
-    @index, @begin, @length = payload.unpack("L>L>L>")
+    super(8, payload)
   end
 end
 

@@ -39,16 +39,18 @@ describe Peer do
   end
 
   it "must be able to read messages from the wire" do
-  #   Peer.default_peers.each do |p|
-  #     begin
-  #       # puts "ip: #{p.ip} port: #{p.port}"
-  #       p.shake_hands
-  #       message = p.read_next_message
-  #       puts message.class
-  #     rescue StandardError => e
-  #       puts e.inspect
-  #     end
-  #   end
+    peer_count = [Peer.default_peers.length, 5].min
+    peers = Peer.default_peers[0..peer_count-1]
+    peers.each do |p|
+       begin
+         puts "ip: #{p.ip} port: #{p.port}"
+         p.shake_hands
+         message = p.read_next_message
+         puts message.class
+       rescue StandardError => e
+         puts e.inspect
+       end
+     end
   end
 
 end
