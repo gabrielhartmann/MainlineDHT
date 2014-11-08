@@ -11,7 +11,6 @@ describe Peer do
   id_length = 20
   info_hash_length = id_length
   
-#  test_peer = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
   test_peer = Peer.default
 
   it "must create an id 20 bytes long if none is specified" do
