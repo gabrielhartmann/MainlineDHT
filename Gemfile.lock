@@ -8,6 +8,7 @@ GEM
   specs:
     bencode (0.8.2)
     rake (10.3.2)
+    workflow (1.2.0)
 
 PLATFORMS
   ruby
@@ -17,3 +18,4 @@ DEPENDENCIES
   bundler (~> 1.7)
   kademlia!
   rake (~> 10.0)
+  workflow (~> 1.2.0)
