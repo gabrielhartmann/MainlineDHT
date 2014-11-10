@@ -9,14 +9,25 @@ class PeerMessage
     @id = id
   end
 
-  def self.Create(length=0, id=nil, payload=nil)
+  def to_wire
+    length = [@length].pack("L>")
+    id = [@id].pack("C") if @id
+    wire_message = length + id
+  end
+
+  def self.Create(length=0, payload=nil)
+    if (payload)
+      raise MessageError, "Payload length must be greater than 0, not #{payload.length}" if payload.length < 1
+      id = payload[0].unpack("C").first
+    end
+
     case length
     when 0
-      return KeepAliveMessage.new if length == 0
+      return KeepAliveMessage.new
     when 1
-      raise MessageError, "Messages of length #{length} must not have a payload" if payload != nil
       CreateChokeInterestMessage(id)
     when 2..Float::INFINITY
+      payload = payload[1..payload.length-1]
       CreatePayloadMessage(length, id, payload)
     else
       raise MessageError, "Invalid message length: #{length}"
@@ -67,6 +78,22 @@ class PayloadMessage < PeerMessage
     super(length, id)
     @payload = payload
   end
+
+  def to_wire
+    peer_wire_message = super.to_wire
+    wire_message = peer_wire_message + payload
+  end
+end
+
+class BlockMessage < PayloadMessage
+  attr_reader :index
+  attr_reader :begin
+  attr_reader :length
+
+  def initialize(id, payload)
+    super(13, id, payload)
+    @index, @begin, @length = payload.unpack("L>L>L>")
+  end
 end
 
 class KeepAliveMessage < PeerMessage
@@ -100,30 +127,26 @@ class NotInterestedMessage < PeerMessage
 end
 
 class HaveMessage < PayloadMessage
-  def initialize(piece_index)
-    raise MessageError, "Invalid piece index: #{piece_index}" unless piece_index >= 0
-    super(5, 4, piece_index)
+  attr_reader :piece_index
+  def initialize(payload)
+    super(5, 4, payload)
+    @piece_index = @payload.unpack("L>").first
+    raise MessageError, "Invalid piece index: #{@piece_index}" unless @piece_index >= 0
   end
 end
 
 class BitfieldMessage < PayloadMessage
-  def initialize(length, bitfield)
+  def initialize(length, payload)
+    super(length, 5, payload)
     raise MessageError, "A bitfield message must have a length of at least 2, not #{length}" if length < 2 
-    super(length, 5, bitfield)
   end
 end
 
-class RequestMessage < PayloadMessage
-  attr_reader :index
-  attr_reader :begin
-  attr_reader :length
-
+class RequestMessage < BlockMessage
   def initialize(payload)
-    super(13, 6, payload)
-    @index, @begin, @length = payload.unpack("L>L>L>")
+    super(6, payload)
   end
 end
-
 
 class PieceMessage < PayloadMessage
   attr_reader :index
@@ -140,14 +163,9 @@ class PieceMessage < PayloadMessage
   end
 end
 
-class CancelMessage < PayloadMessage
-  attr_reader :index
-  attr_reader :begin
-  attr_reader :length
-
+class CancelMessage < BlockMessage
   def initialize(payload)
-    super(13, 8, payload)
-    @index, @begin, @length = payload.unpack("L>L>L>")
+    super(8, payload)
   end
 end
 
