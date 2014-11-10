@@ -24,6 +24,14 @@ class Torrent
     @event = "started"
 
     @peers = announce_request.peers
+    @file = File.new(@metainfo.info.name, "a")
+  end
+
+  def write(piece)
+    piece_offset = piece.index * @metainfo.info.piece_length
+    file_offest = piece_offset + piece.begin
+    f.seek(offset)
+    f.write(piece.block)
   end
 
 private

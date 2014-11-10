@@ -129,10 +129,14 @@ class PieceMessage < PayloadMessage
   attr_reader :index
   attr_reader :begin
   attr_reader :block
+  attr_reader :block_length
     
   def initialize(length, payload)
     super(length, 7, payload)
-    @index, @begin, @block = payload.unpack("L>L>C")
+    @index, @begin, @block = payload.unpack("L>L>C*")
+
+    # block length = total length - sizeof(id) - sizeof(index) - sizeof(begin)
+    @block_length = length - 9
   end
 end
 

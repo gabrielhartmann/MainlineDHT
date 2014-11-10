@@ -7,9 +7,9 @@ describe PeerStateMachine do
   it "must be able to transition from closed to shake_hands on event shake" do
     test_machine = PeerStateMachine.new(Peer.default)
     test_machine.closed?.must_equal true
-    test_machine.can_shake?.must_equal true
-    test_machine.shake!
-    test_machine.shake_hands?.must_equal true
+    test_machine.can_shake_hands?.must_equal true
+    test_machine.shake_hands!
+    test_machine.connected?.must_equal true
   end 
   
   it "must be able to transition from closed to closed on event error" do
@@ -23,9 +23,9 @@ describe PeerStateMachine do
   it "must be able to transition from closed to shake_hands to closed" do
     test_machine = PeerStateMachine.new(Peer.default)
     test_machine.closed?.must_equal true
-    test_machine.can_shake?.must_equal true
-    test_machine.shake!
-    test_machine.shake_hands?.must_equal true
+    test_machine.can_shake_hands?.must_equal true
+    test_machine.shake_hands!
+    test_machine.connected?.must_equal true
     test_machine.can_error?.must_equal true
     test_machine.error!
     test_machine.closed?.must_equal true

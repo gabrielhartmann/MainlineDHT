@@ -41,3 +41,6 @@ tags
 *.sw*
 *.vim
 *.orig
+
+# ignore iso files
+*.iso

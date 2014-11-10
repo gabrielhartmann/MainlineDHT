@@ -24,10 +24,10 @@ class PeerStateMachine
   workflow do
     state :closed do
       event :error, :transitions_to => :closed
-      event :shake, :transitions_to => :shake_hands
+      event :shake_hands, :transitions_to => :connected
     end
     
-    state :shake_hands do
+    state :connected do
       event :error, :transitions_to => :closed
 
       on_entry do
@@ -35,10 +35,8 @@ class PeerStateMachine
       end
     end
 
-
-
     on_transition do |from, to, triggering_event, *event_args|
-      # puts "#{from} -> #{to}"
+      # puts "#{triggering_event}: #{from} -> #{to}"
     end
   end
 end

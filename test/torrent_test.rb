@@ -1,5 +1,6 @@
 require_relative 'test_helper'
 require_relative 'torrent_test_helper.rb'
+require_relative '../lib/kademlia/messages.rb'
 
 describe Torrent do
   it "can be created with a torrent file" do
@@ -19,5 +20,9 @@ describe Torrent do
     end
 
     raise StandardError, "Failed to find a peer which supports DHT"
+  end
+
+  it "can write a piece to a file" do
+    PeerMessage.
   end
 end
