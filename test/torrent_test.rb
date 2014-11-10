@@ -23,6 +23,17 @@ describe Torrent do
   end
 
   it "can write a piece to a file" do
-    PeerMessage.
+    # A piece message has id 7 according to the spec
+    id = 7
+    index = beg = 0
+    block = 5
+    
+    # Simulating a payload for a 1 byte block of 0b00000101
+    sim_payload = [id, index, beg, block, block+1, block+2].pack("CL>L>C*")
+
+    message = PeerMessage.Create(sim_payload.length, sim_payload)
+
+    t = Torrent.default
+    t.write(message)
   end
 end

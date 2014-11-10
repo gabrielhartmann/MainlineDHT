@@ -24,14 +24,18 @@ class Torrent
     @event = "started"
 
     @peers = announce_request.peers
-    @file = File.new(@metainfo.info.name, "a")
+    if (File.exists?(@metainfo.info.name))
+      @file = File.new(@metainfo.info.name, "r+")
+    else
+      @file = File.new(@metainfo.info.name, "w")
+    end
   end
 
   def write(piece)
     piece_offset = piece.index * @metainfo.info.piece_length
-    file_offest = piece_offset + piece.begin
-    f.seek(offset)
-    f.write(piece.block)
+    file_offset = piece_offset + piece.begin
+    @file.seek(file_offset)
+    @file.write(piece.block)
   end
 
 private

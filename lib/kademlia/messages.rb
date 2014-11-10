@@ -152,14 +152,18 @@ class PieceMessage < PayloadMessage
   attr_reader :index
   attr_reader :begin
   attr_reader :block
-  attr_reader :block_length
     
   def initialize(length, payload)
     super(length, 7, payload)
-    @index, @begin, @block = payload.unpack("L>L>C*")
+    # unpack the whole message
+    unpacked_payload = payload.unpack("L>L>C*")
 
-    # block length = total length - sizeof(id) - sizeof(index) - sizeof(begin)
-    @block_length = length - 9
+    # extract the piece index and offset in the piece
+    @index = unpacked_payload[0]
+    @begin = unpacked_payload[1]
+
+    # re-pack the actual piece
+    @block = unpacked_payload[2..-1].pack("C*")
   end
 end
 
