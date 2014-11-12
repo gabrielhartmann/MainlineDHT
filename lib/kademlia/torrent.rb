@@ -4,8 +4,7 @@ require_relative 'announce_response'
 require_relative 'id'
 require_relative 'metainfo'
 require_relative 'node'
-require_relative 'torrent_writer'
-require_relative 'torrent_reader'
+require_relative 'torrent_file_io'
 
 class Torrent
   attr_reader :hashed_info
@@ -13,8 +12,7 @@ class Torrent
 
   def initialize(torrent_file)
     @metainfo = Metainfo.new(torrent_file)
-    @torrent_writer = TorrentWriter.new(@metainfo)
-    @torrent_reader = TorrentReader.new(@metainfo)
+    @torrent_file_io = TorrentFileIO.new(@metainfo)
 
     @hashed_info = Digest::SHA1.digest(@metainfo.info_raw.bencode)
     @url_info = CGI.escape(@hashed_info)
@@ -31,11 +29,7 @@ class Torrent
   end
 
   def write(piece)
-    @torrent_writer.write(piece)
-  end
-
-  def get_bitfield
-    @torrent_reader.get_bitfield
+    @torrent_file_io.write(piece)
   end
 
 private
