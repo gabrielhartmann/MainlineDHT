@@ -28,7 +28,7 @@ class PeerMessage
       CreateChokeInterestMessage(id)
     when 2..Float::INFINITY
       payload = payload[1..payload.length-1]
-      CreatePayloadMessage(length, id, payload)
+      CreatePayloadMessage(id, payload)
     else
       raise MessageError, "Invalid message length: #{length}"
     end 
@@ -50,17 +50,16 @@ class PeerMessage
     end
   end
 
-  def self.CreatePayloadMessage(length, id, payload)
+  def self.CreatePayloadMessage(id, payload)
     case id
     when 4
-      raise MessageError, "Have messages must have a length of 5, not #{length}" if length != 5
       HaveMessage.new(payload)
     when 5
-      BitfieldMessage.new(length, payload)
+      BitfieldMessage.new(payload)
     when 6
       RequestMessage.new(payload)
     when 7
-      PieceMessage.new(length, payload)
+      PieceMessage.new(payload)
     when 8
       CancelMessage.new(payload)
     when 9
@@ -91,7 +90,8 @@ class BlockMessage < PayloadMessage
   attr_reader :length
 
   def initialize(id, payload)
-    super(13, id, payload)
+    raise MessageError, "Block messages must have a length of 13, not #{payload.length + 1}" if payload.length + 1 != 13
+    super(payload.length + 1, id, payload)
     @index, @begin, @length = payload.unpack("L>L>L>")
   end
 end
@@ -129,16 +129,17 @@ end
 class HaveMessage < PayloadMessage
   attr_reader :piece_index
   def initialize(payload)
-    super(5, 4, payload)
+    raise MessageError, "Have messages must have a length of 5, not #{payload.length + 1}" if payload.length + 1 != 5
+    super(payload.length + 1, 4, payload)
     @piece_index = @payload.unpack("L>").first
     raise MessageError, "Invalid piece index: #{@piece_index}" unless @piece_index >= 0
   end
 end
 
 class BitfieldMessage < PayloadMessage
-  def initialize(length, payload)
-    super(length, 5, payload)
-    raise MessageError, "A bitfield message must have a length of at least 2, not #{length}" if length < 2 
+  def initialize(payload)
+    raise MessageError, "A bitfield message must have a length of at least 2, not #{payload.length + 1}" if payload.length + 1 < 2 
+    super(payload.length+1, 5, payload)
   end
 end
 
@@ -153,8 +154,8 @@ class PieceMessage < PayloadMessage
   attr_reader :begin
   attr_reader :block
     
-  def initialize(length, payload)
-    super(length, 7, payload)
+  def initialize(payload)
+    super(payload.length+1, 7, payload)
     # unpack the whole message
     unpacked_payload = payload.unpack("L>L>C*")
 
@@ -164,6 +165,10 @@ class PieceMessage < PayloadMessage
 
     # re-pack the actual piece
     @block = unpacked_payload[2..-1].pack("C*")
+  end
+
+  def self.get_payload(idx, bgn, block)
+    [idx, bgn, block.bytes].flatten.pack("L>L>C*")
   end
 end
 

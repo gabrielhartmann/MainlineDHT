@@ -66,6 +66,7 @@ describe PeerMessage do
     length.must_equal 10
 
     message = PeerMessage.Create(length, sim_payload)
+    message.class.must_equal PieceMessage
   end
 
   it "can create a cancel message" do

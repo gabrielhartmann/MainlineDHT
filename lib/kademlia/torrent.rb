@@ -4,6 +4,8 @@ require_relative 'announce_response'
 require_relative 'id'
 require_relative 'metainfo'
 require_relative 'node'
+require_relative 'torrent_writer'
+require_relative 'torrent_reader'
 
 class Torrent
   attr_reader :hashed_info
@@ -11,6 +13,9 @@ class Torrent
 
   def initialize(torrent_file)
     @metainfo = Metainfo.new(torrent_file)
+    @torrent_writer = TorrentWriter.new(@metainfo)
+    @torrent_reader = TorrentReader.new(@metainfo)
+
     @hashed_info = Digest::SHA1.digest(@metainfo.info_raw.bencode)
     @url_info = CGI.escape(@hashed_info)
     @peer_id = peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join unless peer_id
@@ -22,20 +27,15 @@ class Torrent
     @compact = 1
     @support_crypto = 1
     @event = "started"
-
     @peers = announce_request.peers
-    if (File.exists?(@metainfo.info.name))
-      @file = File.new(@metainfo.info.name, "r+")
-    else
-      @file = File.new(@metainfo.info.name, "w")
-    end
   end
 
   def write(piece)
-    piece_offset = piece.index * @metainfo.info.piece_length
-    file_offset = piece_offset + piece.begin
-    @file.seek(file_offset)
-    @file.write(piece.block)
+    @torrent_writer.write(piece)
+  end
+
+  def get_bitfield
+    @torrent_reader.get_bitfield
   end
 
 private
@@ -58,5 +58,4 @@ private
     response = Net::HTTP.get(uri)
     return AnnounceResponse.new(response, @hashed_info, @peer_id)
   end
-
 end

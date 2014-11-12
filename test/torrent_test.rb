@@ -1,6 +1,6 @@
 require_relative 'test_helper'
-require_relative 'torrent_test_helper.rb'
-require_relative '../lib/kademlia/messages.rb'
+require_relative 'torrent_test_helper'
+require_relative '../lib/kademlia/messages'
 
 describe Torrent do
   it "can be created with a torrent file" do
@@ -35,5 +35,10 @@ describe Torrent do
 
     t = Torrent.default
     t.write(message)
+  end
+
+  it "can get a bitfield" do
+    t = Torrent.default
+    t.get_bitfield
   end
 end
