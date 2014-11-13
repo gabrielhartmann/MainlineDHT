@@ -12,13 +12,13 @@ describe Torrent do
     (t.peers.length > 1).must_equal true
   end
 
-  it "must find some peers which support DHT" do
-    t = Torrent.default
-    t.peers.each do |p|
-       p.shake_hands
-       return if p.supports_dht?
-    end
+ # it "must find some peers which support DHT" do
+ #   t = Torrent.default
+ #   t.peers.each do |p|
+ #      p.shake_hands
+ #      return if p.supports_dht?
+ #   end
 
-    raise StandardError, "Failed to find a peer which supports DHT"
-  end
+ #   raise StandardError, "Failed to find a peer which supports DHT"
+ # end
 end
