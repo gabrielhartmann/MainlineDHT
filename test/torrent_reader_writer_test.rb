@@ -9,7 +9,8 @@ describe TorrentFileIO do
     piece_msg_in = PieceMessage.new(payload)
 
     metainfo = Metainfo.default
-    torrent_file_io = TorrentFileIO.new(metainfo)
+    file_name = "test_file_read_write"
+    torrent_file_io = TorrentFileIO.new(metainfo, file_name)
 
     length = torrent_file_io.write(piece_msg_in)
     piece_msg_out = torrent_file_io.read(piece_msg_in.index, piece_msg_in.begin, length)
@@ -20,5 +21,7 @@ describe TorrentFileIO do
     piece_msg_out.length.must_equal piece_msg_in.length
     piece_msg_out.id.must_equal piece_msg_in.id
     piece_msg_out.payload.must_equal piece_msg_in.payload
+
+    File.delete(file_name)
   end
 end
