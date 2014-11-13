@@ -24,4 +24,38 @@ describe TorrentFileIO do
 
     File.delete(file_name)
   end
+
+  it "can determine whether pieces are complete" do
+    metainfo = Metainfo.default
+    torrent_file_io = TorrentFileIO.new(metainfo)
+
+    i = 0
+    metainfo.info.pieces.each do |piece_from_metainfo|
+      piece_from_file = torrent_file_io.read(i, 0, metainfo.info.piece_length) 
+      hashed_piece = Digest::SHA1.digest(piece_from_file.block)
+
+      hashed_piece.must_equal piece_from_metainfo
+      i += 1
+    end
+  end
+
+  it "can determine whether pieces are complete" do
+    metainfo = Metainfo.default
+    torrent_file_io = TorrentFileIO.new(metainfo, "tc08.mp3.part")
+
+    i = 0
+    failed_matches = 0
+    metainfo.info.pieces.each do |piece_from_metainfo|
+      piece_from_file = torrent_file_io.read(i, 0, metainfo.info.piece_length) 
+      hashed_piece = Digest::SHA1.digest(piece_from_file.block)
+
+      if (hashed_piece != piece_from_metainfo)
+	failed_matches += 1
+      end
+      i += 1
+    end
+
+    failed_matches.must_equal 7
+    (metainfo.info.pieces.length > failed_matches).must_equal true
+  end
 end
