@@ -27,7 +27,7 @@ describe TorrentFileIO do
 
   it "can determine whether pieces are complete" do
     metainfo = Metainfo.default
-    torrent_file_io = TorrentFileIO.new(metainfo)
+    torrent_file_io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/tc08.mp3")
 
     i = 0
     metainfo.info.pieces.each do |piece_from_metainfo|
@@ -41,7 +41,7 @@ describe TorrentFileIO do
 
   it "can determine whether pieces are complete" do
     metainfo = Metainfo.default
-    torrent_file_io = TorrentFileIO.new(metainfo, "tc08.mp3.part")
+    torrent_file_io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/tc08.mp3.part")
 
     i = 0
     failed_matches = 0
