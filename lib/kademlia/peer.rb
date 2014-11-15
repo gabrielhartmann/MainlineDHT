@@ -2,7 +2,6 @@ require_relative 'peer_errors'
 require_relative 'handshake_response'
 require_relative 'messages'
 require_relative 'peer_socket'
-require_relative 'peer_state_machine'
 
 class Peer
   attr_reader :id
@@ -24,11 +23,6 @@ class Peer
     @hashed_info = hashed_info
     @local_peer_id = local_peer_id
     @socket = PeerSocket.open(self)
-    @state_machine = PeerStateMachine.new(self)
-  end
-
-  def start
-    @state_machine.shake_hands!
   end
 
   def to_s

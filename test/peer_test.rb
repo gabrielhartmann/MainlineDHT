@@ -37,12 +37,6 @@ describe Peer do
     assert_raises(InvalidPeerError) { p.supports_dht? }
   end
 
-  it "must be able to communicate with peers through the state machine" do
-    p = Peer.default
-    p.start
-    p.state.must_equal :connected
-  end
-
   it "must be able to read messages from the wire" do
   #   peer_count = [Peer.default_peers.length, 5].min
   #   peers = Peer.default_peers[0..peer_count-1]
