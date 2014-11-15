@@ -9,6 +9,7 @@ describe PeerRespondStateMachine do
     test_machine = PeerRespondStateMachine.new
     test_machine.neutral?.must_equal true
     test_machine.peer_interested.must_equal false 
+    test_machine.am_choking.must_equal true
 
     # Transition from neutral to wait_unchoke
     test_machine.can_recv_interested?.must_equal true
@@ -28,6 +29,7 @@ describe PeerRespondStateMachine do
     test_machine = PeerRespondStateMachine.new
     test_machine.neutral?.must_equal true
     test_machine.peer_interested.must_equal false 
+    test_machine.am_choking.must_equal true
 
     # Transition from neutral to wait_unchoke
     test_machine.can_recv_interested?.must_equal true
@@ -53,6 +55,7 @@ describe PeerRespondStateMachine do
     test_machine = PeerRespondStateMachine.new
     test_machine.neutral?.must_equal true
     test_machine.peer_interested.must_equal false 
+    test_machine.am_choking.must_equal true
 
     # Transition from neutral to wait_unchoke
     test_machine.can_recv_interested?.must_equal true
@@ -82,6 +85,7 @@ describe PeerRespondStateMachine do
     test_machine = PeerRespondStateMachine.new
     test_machine.neutral?.must_equal true
     test_machine.peer_interested.must_equal false 
+    test_machine.am_choking.must_equal true
 
     # Transition from neutral to wait_interest
     test_machine.can_send_unchoke?.must_equal true
