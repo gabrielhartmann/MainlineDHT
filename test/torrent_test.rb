@@ -9,6 +9,8 @@ describe Torrent do
 
   it "can get a list of peers" do
     t = Torrent.default
+    t = Torrent.new(File.dirname(__FILE__) + '/ubuntu.torrent')
+
     (t.peers.length > 1).must_equal true
   end
 
