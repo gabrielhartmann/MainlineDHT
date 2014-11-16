@@ -1,10 +1,19 @@
 require 'workflow'
 require_relative 'peer'
+require_relative 'state_machine_errors'
 
 class PeerRespondStateMachine
   def initialize
     @am_choking = true
     @peer_interested = false
+  end
+
+  def am_choking?
+    @am_choking
+  end
+
+  def peer_interested?
+    @peer_interested
   end
 
   def recv_interested
@@ -21,14 +30,6 @@ class PeerRespondStateMachine
 
   def send_unchoke
     @am_choking = false
-  end
-
-  def am_choking?
-    @am_choking
-  end
-
-  def peer_interested?
-    @peer_interested
   end
 
   include Workflow
