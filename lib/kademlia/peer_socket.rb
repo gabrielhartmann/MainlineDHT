@@ -6,6 +6,10 @@ class PeerSocket
     @peer = peer 
   end
 
+  def self.open(peer)
+    PeerSocket.new(peer)
+  end
+
   def shake_hands
     @socket = TCPSocket.open(@peer.ip, @peer.port)
     @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
@@ -31,7 +35,7 @@ class PeerSocket
     return PeerMessage.Create(length, payload)
   end
 
-  def self.open(peer)
-    PeerSocket.new(peer)
+  def write(message)
+    @socket.write(message.to_wire)
   end
 end

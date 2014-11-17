@@ -1,5 +1,4 @@
 require 'workflow'
-require_relative 'peer'
 require_relative 'state_machine_errors'
 
 class PeerRespondStateMachine
