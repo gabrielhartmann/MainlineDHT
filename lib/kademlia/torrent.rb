@@ -32,6 +32,10 @@ class Torrent
     @torrent_file_io.write(piece)
   end
 
+  def read(idx, bgn, length)
+    @torrent_file_io.read(idx, bgn, length)
+  end
+
 private
   def announce_url
     "#{@metainfo.announce}"\
