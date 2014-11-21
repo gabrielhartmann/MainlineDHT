@@ -1,5 +1,5 @@
 class Metainfo
-  @@default_file = File.dirname(__FILE__) + '/tc08.mp3.torrent'
+  @@default_file = File.dirname(__FILE__) + '/ubuntu.torrent'
   @@default_metainfo = nil
 
   def self.default_file
