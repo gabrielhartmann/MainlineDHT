@@ -25,7 +25,7 @@ class Torrent
     @compact = 1
     @support_crypto = 1
     @event = "started"
-    @peers = announce_request.peers
+    @peers = decode_peers(announce_request.peers)
   end
 
   def write(piece)
@@ -51,5 +51,18 @@ private
     uri = URI(announce_url)
     response = Net::HTTP.get(uri)
     return AnnounceResponse.new(response, @hashed_info, @peer_id)
+  end
+
+  def decode_peers(encoded_peers)
+    peers = Array.new
+    index = 0
+    while index + 6 <= encoded_peers.length
+      ip = encoded_peers[index,4].unpack("CCCC").join('.')
+      port = encoded_peers[index+4,2].unpack("n").first
+      peers.push Peer.new(ip, port, @hashed_info, @local_peer_id)
+      index += 6
+    end
+
+    return peers
   end
 end
