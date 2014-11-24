@@ -9,7 +9,7 @@ describe Tracker do
 
   it "can get a list of peers" do
     t = Tracker.default
-    (t.peers.length > 1).must_equal true
+    (t.peers.length >= 6).must_equal true
   end
 
  # it "must find some peers which support DHT" do

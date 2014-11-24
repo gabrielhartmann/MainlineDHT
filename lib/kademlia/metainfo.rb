@@ -54,5 +54,4 @@ class Info
     # for a call to first
     unpack_strings.map { |unpack_string| pieces_raw.unpack(unpack_string).first }
   end
-
 end
