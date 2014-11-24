@@ -23,8 +23,6 @@ describe Peer do
 
   it "must be able to shake hands" do
     p = Peer.default_peers.sample
-    puts p.class
-    puts p.inspect
     response = p.shake_hands
 
     response.length.must_equal 19
