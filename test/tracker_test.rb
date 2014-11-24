@@ -1,16 +1,14 @@
 require_relative 'test_helper'
-require_relative 'torrent_test_helper'
-require_relative '../lib/kademlia/messages'
+require_relative 'tracker_test_helper'
+require_relative '../lib/kademlia/tracker'
 
-describe Torrent do
+describe Tracker do
   it "can be created with a torrent file" do
-    Torrent.default
+    Tracker.default
   end
 
   it "can get a list of peers" do
-    t = Torrent.default
-    t = Torrent.new(File.dirname(__FILE__) + '/ubuntu.torrent')
-
+    t = Tracker.default
     (t.peers.length > 1).must_equal true
   end
 

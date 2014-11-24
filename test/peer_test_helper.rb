@@ -1,4 +1,4 @@
-require_relative 'torrent_test_helper'
+require_relative 'tracker_test_helper'
 
 class Peer
   @@default_peer = nil
@@ -6,7 +6,7 @@ class Peer
 
   def self.default
     if (!@@default_peer)
-      @@default_peer = Torrent.default.peers.first
+      @@default_peer = Tracker.default.peers.first
     end
 
     return @@default_peer
@@ -14,7 +14,7 @@ class Peer
 
   def self.default_peers
     if (!@@default_peers)
-      @@default_peers = Torrent.default.peers
+      @@default_peers = Tracker.default.peers
     end
 
     return @@default_peers

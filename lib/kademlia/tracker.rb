@@ -6,12 +6,12 @@ require_relative 'metainfo'
 require_relative 'node'
 require_relative 'torrent_file_io'
 
-class Torrent
+class Tracker 
   attr_reader :hashed_info
   attr_reader :peers
 
-  def initialize(torrent_file)
-    @metainfo = Metainfo.new(torrent_file)
+  def initialize(metainfo)
+    @metainfo = metainfo
     @torrent_file_io = TorrentFileIO.new(@metainfo)
 
     @hashed_info = Digest::SHA1.digest(@metainfo.info_raw.bencode)

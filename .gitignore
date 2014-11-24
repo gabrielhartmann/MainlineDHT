@@ -44,3 +44,6 @@ tags
 
 # ignore iso files
 *.iso
+
+# ignore marshalled files
+*.marshal
