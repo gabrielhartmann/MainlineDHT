@@ -12,6 +12,14 @@ describe Tracker do
     (t.peers.length >= 6).must_equal true
   end
 
+  it "cannot be created with an invalid peer id" do
+    assert_raises(InvalidPeerError) { Tracker.new(Metainfo.default, "a") }
+  end
+
+  it "can be created with a valid peer id" do
+    Tracker.new(Metainfo.default, "abcdefghijklmnopqrst")
+  end
+
  # it "must find some peers which support DHT" do
  #   t = Torrent.default
  #   t.peers.each do |p|

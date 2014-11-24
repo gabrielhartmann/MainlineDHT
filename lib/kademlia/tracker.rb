@@ -4,17 +4,21 @@ require_relative 'announce_response'
 require_relative 'id'
 require_relative 'metainfo'
 require_relative 'node'
-require_relative 'torrent_file_io'
+require_relative 'peer_errors'
 
 class Tracker 
   attr_reader :hashed_info
   attr_reader :peers
+  attr_reader :peer_id
 
-  def initialize(metainfo)
+  def initialize(metainfo, peer_id = nil)
+    peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join unless peer_id
+    @peer_id = peer_id
+    raise InvalidPeerError, "Peer ids must have a length of 20 not #{@peer_id.length}" unless @peer_id.length == 20
+
     @metainfo = metainfo
     @hashed_info = Digest::SHA1.digest(@metainfo.info_raw.bencode)
     @url_info = CGI.escape(@hashed_info)
-    @peer_id = peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join unless peer_id
     @port = 51413
     @uploaded = 0
     @downloaded = 0
