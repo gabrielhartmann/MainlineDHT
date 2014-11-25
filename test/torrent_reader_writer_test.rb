@@ -58,4 +58,5 @@ describe TorrentFileIO do
     failed_matches.must_equal 7
     (metainfo.info.pieces.length > failed_matches).must_equal true
   end
+
 end

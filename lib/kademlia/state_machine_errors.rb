@@ -1,0 +1,2 @@
+class InvalidStateInvariant < StandardError
+end

@@ -35,10 +35,6 @@ class Peer
     (@handshake_response.reserved & @@dht_bitmask) != 0
   end
 
-  def state
-    @state_machine.current_state.name
-  end
-
   def shake_hands
     # Only shake hands once
     return @handshake_response if @handshake_response != nil
@@ -50,6 +46,10 @@ class Peer
 
   def read_next_message
     @socket.read
+  end
+
+  def write(message)
+    @socket.write(messge)
   end
 
 private
