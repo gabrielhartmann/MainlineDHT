@@ -27,9 +27,6 @@ class BlockDirectory
   end
 
   def completed_pieces
-    # Get those pieces which are completed.  Since this is just an array of
-    # bools at this point the select statement looks a little silly.  It's
-    # yielding based on whether p is true
     @pieces.select { |p| p.complete? }
   end
 
