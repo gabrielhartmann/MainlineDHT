@@ -1,16 +1,17 @@
 require_relative 'block_directory_errors'
 
 class BlockDirectory
+  attr_reader :pieces
+
   def initialize(metainfo, torrent_file_io)
     @metainfo = metainfo
     @torrent_file_io = torrent_file_io
-    @last_piece_length = @metainfo.info.length - (@metainfo.info.pieces.length - 1) * @metainfo.info.piece_length
-    @pieces = Array.new
+    @pieces = initialize_pieces 
   end
 
-  def refresh_completed_pieces
+  def refresh_pieces
     (0..@metainfo.info.pieces.length-1).each do |index|
-      @pieces[index] = refresh_piece(index)
+      @pieces[index].complete = refresh_piece(index)
     end
 
     return @pieces
@@ -29,6 +30,40 @@ class BlockDirectory
     # Get those pieces which are completed.  Since this is just an array of
     # bools at this point the select statement looks a little silly.  It's
     # yielding based on whether p is true
-    @pieces.select { |p| p }
+    @pieces.select { |p| p.complete? }
+  end
+
+  private
+
+  def initialize_pieces
+    pieces = Array.new
+    (0..@metainfo.info.pieces.length-2).each do |index|
+      pieces << Piece.new(@metainfo.info.piece_length)
+    end
+
+    last_piece_length = @metainfo.info.length - (@metainfo.info.pieces.length - 1) * @metainfo.info.piece_length
+    pieces << Piece.new(last_piece_length)
+
+    return pieces
+  end
+end
+
+class Piece
+  attr_reader :length
+  attr_reader :peers
+  attr_writer :complete
+
+  def initialize(length, complete = false)
+    @length = length
+    @complete = complete
+    @peers = Array.new
+  end
+
+  def complete?
+    @complete
+  end
+
+  def add_peer(peer)
+    @peers << peer
   end
 end
