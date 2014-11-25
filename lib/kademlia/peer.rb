@@ -17,6 +17,7 @@ class Peer
   @@dht_bitmask = 0x0000000000000001
 
   def initialize(ip, port, hashed_info, local_peer_id, id = generate_id)
+    raise InvalidPeerError, "The hashed info cannot be null" unless hashed_info
     @ip = ip
     @id = set_id(id)
     @port = port

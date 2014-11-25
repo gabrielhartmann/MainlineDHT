@@ -22,7 +22,7 @@ describe Peer do
   end
 
   it "must be able to shake hands" do
-    p = Peer.default
+    p = Peer.default_peers.sample
     response = p.shake_hands
 
     response.length.must_equal 19

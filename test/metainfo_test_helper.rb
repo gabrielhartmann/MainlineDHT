@@ -1,3 +1,5 @@
+require_relative '../lib/kademlia/metainfo'
+
 class Metainfo
   @@default_file = File.dirname(__FILE__) + '/ubuntu.torrent'
   @@default_metainfo = nil

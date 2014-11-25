@@ -1,0 +1,2 @@
+class BlockDirectoryError < StandardError
+end
