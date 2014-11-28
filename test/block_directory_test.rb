@@ -90,4 +90,24 @@ describe BlockDirectory do
     block_dir.available_pieces.length.must_equal available_piece_count + 1
     block_dir.unavailable_pieces.length.must_equal unavailable_piece_count - 1
   end
+
+  it "generates valid block offsets and sizes for all pieces" do
+    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+
+    block_dir.pieces.each do |piece|
+      block_length_sum = 0
+      (0..piece.blocks.length-1).each do |index|
+	block = piece.blocks[index]
+	block_length_sum += block.length
+	(block.length <= Block.max_length).must_equal true
+
+	if (index+1 < piece.blocks.length)
+	  next_block = piece.blocks[index+1]
+	  next_block.offset.must_equal block.offset + block.length
+	end
+      end
+
+      block_length_sum.must_equal piece.length
+    end
+  end
 end

@@ -71,12 +71,14 @@ end
 class Piece
   attr_reader :length
   attr_reader :peers
+  attr_reader :blocks
   attr_writer :complete
 
   def initialize(length, complete = false)
     @length = length
     @complete = complete
     @peers = Array.new
+    @blocks = initialize_blocks
   end
 
   def complete?
@@ -87,5 +89,38 @@ class Piece
     unless (@peers.include? peer)
       @peers << peer
     end
+  end
+
+  private
+
+  def initialize_blocks
+    length_left = @length
+    offset = 0
+    blocks = Array.new
+
+    while (length_left > 0)
+      block_length = [Block.max_length, length_left].min
+      blocks << Block.new(offset, block_length)
+      offset += block_length
+      length_left -= block_length
+    end
+
+    return blocks
+  end
+end
+
+class Block
+  attr_reader :length
+  attr_reader :offset
+
+  @@max_length = 2**14
+  
+  def initialize(offset, length)
+    @offset = offset
+    @length = length
+  end
+
+  def self.max_length
+    @@max_length
   end
 end
