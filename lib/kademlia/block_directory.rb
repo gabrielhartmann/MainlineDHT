@@ -30,6 +30,10 @@ class BlockDirectory
     @pieces.select { |p| p.complete? }
   end
 
+  def add_peer_to_piece(index, peer)
+      @pieces[index].add_peer(peer)
+  end
+
   private
 
   def initialize_pieces
@@ -61,6 +65,8 @@ class Piece
   end
 
   def add_peer(peer)
-    @peers << peer
+    unless (@peers.include? peer)
+      @peers << peer
+    end
   end
 end

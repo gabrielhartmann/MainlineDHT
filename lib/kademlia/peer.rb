@@ -26,6 +26,10 @@ class Peer
     @socket = PeerSocket.open(self)
   end
 
+  def ==(another_peer)
+    return @ip == another_peer.ip && @port == another_peer.port
+  end
+
   def to_s
     "ip: #{@ip} port: #{@port} id: #{@id} hashed_info: #{@hashed_info} local_peer_id: #{@local_peer_id} handshake_response: #{@handshake_response}"
   end

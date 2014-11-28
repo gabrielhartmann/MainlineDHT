@@ -12,6 +12,7 @@ class Swarm
     @torrent_file_io = TorrentFileIO.new(@metainfo, @metainfo.info.name + ".part")
     @tracker = Tracker.new(@metainfo, @peer_id)
     @peers = decode_peers(@tracker.peers)
+    @block_directory = BlockDirectory.new(@metainfo, @torrent_file_io)
   end
 
   private
