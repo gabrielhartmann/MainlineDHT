@@ -1,6 +1,8 @@
 require_relative 'metainfo'
 require_relative 'torrent_file_io'
 require_relative 'tracker'
+require_relative 'block_directory'
+require_relative 'swarm_errors'
 
 class Swarm
   attr_reader :metainfo
@@ -13,6 +15,15 @@ class Swarm
     @tracker = Tracker.new(@metainfo, @peer_id)
     @peers = decode_peers(@tracker.peers)
     @block_directory = BlockDirectory.new(@metainfo, @torrent_file_io)
+  end
+
+  def process_message(message, peer)
+    case message
+    when HaveMessage
+      @block_directory.add_peer_to_piece(message.piece_index, peer)
+    else
+      raise SwarmError, "Cannot process unsupported message: #{message.inspect}" 
+    end
   end
 
   private

@@ -1,0 +1,2 @@
+class SwarmError < StandardError
+end

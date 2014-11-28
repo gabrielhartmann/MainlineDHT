@@ -1,11 +1,7 @@
 require_relative 'test_helper'
-require_relative '../lib/kademlia/messages'
+require_relative 'peer_message_test_helper'
 
 describe PeerMessage do
-
-  def id_to_wire(id)
-    [id].pack("C")
-  end
 
   it "can create keep alive messages" do
     message = PeerMessage.Create
@@ -13,40 +9,40 @@ describe PeerMessage do
   end
 
   it "can create choke messages" do
-    message = PeerMessage.Create(1, id_to_wire(0))
+    message = PeerMessage.Create(1, PeerMessage.id_to_wire(0))
     message.class.must_equal ChokeMessage
   end
 
   it "can create unchoke messages" do
-    message = PeerMessage.Create(1, id_to_wire(1))
+    message = PeerMessage.Create(1, PeerMessage.id_to_wire(1))
     message.class.must_equal UnchokeMessage
   end
 
   it "can create interested messages" do
-    message = PeerMessage.Create(1, id_to_wire(2))
+    message = PeerMessage.Create(1, PeerMessage.id_to_wire(2))
     message.class.must_equal InterestedMessage
   end
 
   it "can create not interested messages" do
-    message = PeerMessage.Create(1, id_to_wire(3))
+    message = PeerMessage.Create(1, PeerMessage.id_to_wire(3))
     message.class.must_equal NotInterestedMessage
   end
 
   it "can create have messages" do
-    payload = id_to_wire(4) + [0].pack("L>")
+    payload = PeerMessage.id_to_wire(4) + [0].pack("L>")
     message = PeerMessage.Create(5, payload)
     message.class.must_equal HaveMessage
   end
 
   it "can create bitfield messages" do
     # simulating a payload for the bitfield of 0b00000011
-    payload = id_to_wire(5) + [3].pack("C")
+    payload = PeerMessage.id_to_wire(5) + [3].pack("C")
     message = PeerMessage.Create(2, payload)
     message.class.must_equal BitfieldMessage
   end
 
   it "can create a request message" do
-    payload = id_to_wire(6) + [1, 1, 1].pack("L>L>L>")
+    payload = PeerMessage.id_to_wire(6) + [1, 1, 1].pack("L>L>L>")
     message = PeerMessage.Create(13, payload)
     message.class.must_equal RequestMessage
   end
@@ -70,13 +66,13 @@ describe PeerMessage do
   end
 
   it "can create a cancel message" do
-    payload = id_to_wire(8) + [1, 1, 1].pack("L>L>L>")
+    payload = PeerMessage.id_to_wire(8) + [1, 1, 1].pack("L>L>L>")
     message = PeerMessage.Create(13, payload)
     message.class.must_equal CancelMessage
   end
 
   it "can create a port message" do
-    payload = id_to_wire(9) + [6881].pack("s>")
+    payload = PeerMessage.id_to_wire(9) + [6881].pack("s>")
     message = PeerMessage.Create(3, payload)
     message.class.must_equal PortMessage 
   end
