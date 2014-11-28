@@ -110,4 +110,11 @@ describe BlockDirectory do
       block_length_sum.must_equal piece.length
     end
   end
+
+  it "can mark a block as complete" do
+    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir.pieces[0].blocks[0].complete?.must_equal false
+    block_dir.finish_block(0, 0)
+    block_dir.pieces[0].blocks[0].complete?.must_equal true 
+  end
 end

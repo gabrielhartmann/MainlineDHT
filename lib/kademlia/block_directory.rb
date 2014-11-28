@@ -11,13 +11,13 @@ class BlockDirectory
 
   def refresh_pieces
     (0..@metainfo.info.pieces.length-1).each do |index|
-      @pieces[index].complete = refresh_piece(index)
+      @pieces[index].finish if piece_finished?(index)
     end
 
     return @pieces
   end
 
-  def refresh_piece(index)
+  def piece_finished?(index)
     raise BlockDirectoryError, "Index of piece #{index} must be within range 0..#{@metainfo.info.pieces.length} inclusive." unless index >= 0 && index < @metainfo.info.pieces.length
 
     hash_from_metainfo = @metainfo.info.pieces[index]
@@ -41,6 +41,10 @@ class BlockDirectory
 
   def unavailable_pieces
     incomplete_pieces.select { |p| p.peers.length == 0 }
+  end
+
+  def finish_block(piece_index, block_index)
+    @pieces[piece_index].finish_block(block_index)
   end
 
   def add_peer_to_piece(index, peer)
@@ -72,17 +76,29 @@ class Piece
   attr_reader :length
   attr_reader :peers
   attr_reader :blocks
-  attr_writer :complete
 
-  def initialize(length, complete = false)
+  def initialize(length)
     @length = length
-    @complete = complete
     @peers = Array.new
     @blocks = initialize_blocks
   end
 
+  def finish 
+    @blocks.each do |block|
+      block.complete = true
+    end
+  end
+
+  def finish_block(index)
+    @blocks[index].complete = true
+  end
+
+  def incomplete_blocks
+    @blocks.select { |b| !b.complete? }
+  end
+
   def complete?
-    @complete
+    incomplete_blocks.length == 0
   end
 
   def add_peer(peer)
@@ -112,15 +128,21 @@ end
 class Block
   attr_reader :length
   attr_reader :offset
+  attr_writer :complete
 
   @@max_length = 2**14
   
-  def initialize(offset, length)
+  def initialize(offset, length, complete = false)
     @offset = offset
     @length = length
+    @complete = complete
   end
 
   def self.max_length
     @@max_length
+  end
+
+  def complete?
+    @complete
   end
 end
