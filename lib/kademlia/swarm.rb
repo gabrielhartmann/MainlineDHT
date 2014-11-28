@@ -25,11 +25,22 @@ class Swarm
       bitfield = message.payload.unpack("B*").first
 
       (0..bitfield.length-1).each do |index|
-	@block_directory.add_peer_to_piece(index, peer) if bitfield[0] == "1"
+	@block_directory.add_peer_to_piece(index, peer) if bitfield[index] == "1"
       end
     else
       raise SwarmError, "Cannot process unsupported message: #{message.inspect}" 
     end
+  end
+
+  def interesting_peers
+    int_peers = Array.new
+    @block_directory.incomplete_pieces.each do |piece|
+      piece.peers.each do |peer|
+	int_peers << peer unless int_peers.include? peer
+      end
+    end
+
+    return int_peers
   end
 
   private

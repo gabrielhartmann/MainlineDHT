@@ -30,8 +30,27 @@ class BlockDirectory
     @pieces.select { |p| p.complete? }
   end
 
+  def incomplete_pieces
+    @pieces.select { |p| (!p.complete?) }
+  end
+
+  # Pieces which can be downloaded
+  def available_pieces
+    incomplete_pieces.select { |p| p.peers.length > 0 }
+  end
+
+  def unavailable_pieces
+    incomplete_pieces.select { |p| p.peers.length == 0 }
+  end
+
   def add_peer_to_piece(index, peer)
-      @pieces[index].add_peer(peer)
+    @pieces[index].add_peer(peer)
+  end
+
+  def remove_peer(peer)
+    @pieces.each do |piece|
+      piece.peers.delete(peer)
+    end
   end
 
   private
