@@ -21,6 +21,12 @@ class Swarm
     case message
     when HaveMessage
       @block_directory.add_peer_to_piece(message.piece_index, peer)
+    when BitfieldMessage
+      bitfield = message.payload.unpack("B*").first
+
+      (0..bitfield.length-1).each do |index|
+	@block_directory.add_peer_to_piece(index, peer) if bitfield[0] == "1"
+      end
     else
       raise SwarmError, "Cannot process unsupported message: #{message.inspect}" 
     end

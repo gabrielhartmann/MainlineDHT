@@ -18,4 +18,15 @@ describe Swarm do
 
     s.process_message(have_message, Peer.default)
   end
+
+  it "can handle a BitfieldMessage" do
+    s = Swarm.new(Metainfo.default_file)
+
+    # simulating a payload for the bitfield of 0b00000011
+    payload = PeerMessage.id_to_wire(5) + [3].pack("C")
+    bitfield_message = PeerMessage.Create(2, payload)
+    bitfield_message.class.must_equal BitfieldMessage
+
+    s.process_message(bitfield_message, Peer.default)
+  end
 end
