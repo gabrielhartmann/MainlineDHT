@@ -47,3 +47,6 @@ tags
 
 # ignore marshalled files
 *.marshal
+
+# ignore specific files
+ubuntu-12.04.5-alternate-amd64.iso.part

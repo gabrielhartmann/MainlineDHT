@@ -59,4 +59,22 @@ describe TorrentFileIO do
     (metainfo.info.pieces.length > failed_matches).must_equal true
   end
 
+  it "creates the file if it doesn't exist upon creation" do
+    file_name = "file_does_not_exist"
+    File.exists?(file_name).must_equal false
+
+    begin
+      metainfo = Metainfo.default
+      torrent_file_io = TorrentFileIO.new(metainfo, file_name)
+
+      File.exists?(file_name).must_equal true
+      File.size?(file_name).must_equal metainfo.info.length
+
+      File.delete(file_name)
+      File.exists?(file_name).must_equal false
+    rescue
+      File.delete(file_name)
+      raise
+    end
+  end
 end
