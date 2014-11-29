@@ -50,6 +50,19 @@ describe Peer do
     request_message.class.must_equal RequestMessage
     request_message.index.must_equal have_message.piece_index
   end
+  
+  it "must be able to determine whether it is interesting" do
+    s = Swarm.new(Metainfo.default_file)
+    p = Peer.default
+    p.join(s)
+
+    p.is_interesting?.must_equal false
+
+    have_message = HaveMessage.Create(0)
+    s.process_message(have_message, p)
+
+    p.is_interesting?.must_equal true
+  end
 
   it "must be able to read messages from the wire" do
   #   peer_count = [Peer.default_peers.length, 5].min

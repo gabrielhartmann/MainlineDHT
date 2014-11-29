@@ -68,6 +68,10 @@ class Peer
     return block.to_wire
   end
 
+  def is_interesting?
+    @swarm.interesting_peers.include?(self)
+  end
+
 private
 
   def generate_id
