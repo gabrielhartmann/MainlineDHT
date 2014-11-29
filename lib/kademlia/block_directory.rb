@@ -43,7 +43,7 @@ class BlockDirectory
       pieces = pieces.select { |p| p.peers.include? peer }
     end
 
-    return pieces
+    return pieces.sort_by! { |p| p.peers.length }
   end
 
   def incomplete_blocks(peer = nil)
@@ -172,5 +172,9 @@ class Block
 
   def complete?
     @complete
+  end
+
+  def to_wire
+    RequestMessage.create(@index, @offset, @length)
   end
 end

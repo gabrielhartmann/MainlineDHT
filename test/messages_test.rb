@@ -1,5 +1,4 @@
 require_relative 'test_helper'
-require_relative 'peer_message_test_helper'
 
 describe PeerMessage do
 

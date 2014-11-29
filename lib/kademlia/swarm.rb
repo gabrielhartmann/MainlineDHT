@@ -7,14 +7,15 @@ require_relative 'swarm_errors'
 class Swarm
   attr_reader :metainfo
   attr_reader :peers
+  attr_reader :block_directory
 
   def initialize(torrent_file)
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
     @torrent_file_io = TorrentFileIO.new(@metainfo, @metainfo.info.name + ".part")
     @tracker = Tracker.new(@metainfo, @peer_id)
-    @peers = decode_peers(@tracker.peers)
     @block_directory = BlockDirectory.new(@metainfo, @torrent_file_io)
+    @peers = decode_peers(@tracker.peers)
   end
 
   def process_message(message, peer)

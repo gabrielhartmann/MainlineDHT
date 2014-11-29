@@ -8,10 +8,14 @@ class PeerMessage
     @length = length
     @id = id
   end
+  
+  def self.id_to_wire(id)
+    [id].pack("C")
+  end
 
   def to_wire
     length = [@length].pack("L>")
-    id = [@id].pack("C") if @id
+    id = PeerMessage.id_to_wire(@id) if @id
     wire_message = length + id
   end
 
@@ -128,11 +132,19 @@ end
 
 class HaveMessage < PayloadMessage
   attr_reader :piece_index
+
+  @@message_id = 4
+
   def initialize(payload)
     raise MessageError, "Have messages must have a length of 5, not #{payload.length + 1}" if payload.length + 1 != 5
-    super(payload.length + 1, 4, payload)
+    super(payload.length + 1, @@message_id, payload)
     @piece_index = @payload.unpack("L>").first
     raise MessageError, "Invalid piece index: #{@piece_index}" unless @piece_index >= 0
+  end
+
+  def self.Create(index)
+    payload = [index].pack("L>")
+    return HaveMessage.new(payload)
   end
 end
 
@@ -146,6 +158,10 @@ end
 class RequestMessage < BlockMessage
   def initialize(payload)
     super(6, payload)
+  end
+
+  def self.create(index, offset, length)
+    RequestMessage.new([index, offset, length].pack("L>L>L>"))
   end
 end
 

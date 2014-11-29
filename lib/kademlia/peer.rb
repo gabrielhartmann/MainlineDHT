@@ -15,6 +15,7 @@ class Peer
   attr_reader :local_peer_id
 
   @@dht_bitmask = 0x0000000000000001
+  @@request_sample_size = 10
 
   def initialize(ip, port, hashed_info, local_peer_id, id = generate_id)
     raise InvalidPeerError, "The hashed info cannot be null" unless hashed_info
@@ -54,6 +55,17 @@ class Peer
 
   def write(message)
     @socket.write(messge)
+  end
+
+  def join(swarm)
+    @swarm = swarm
+  end
+  
+  def get_next_request(sample_size = @@request_sample_size)
+    candidate_blocks = @swarm.block_directory.incomplete_blocks(self)
+    candidate_blocks = candidate_blocks.first(sample_size)
+    block = candidate_blocks.sample
+    return block.to_wire
   end
 
 private

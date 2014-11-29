@@ -1,7 +1,6 @@
 require_relative 'test_helper'
 require_relative 'metainfo_test_helper'
 require_relative 'peer_test_helper'
-require_relative 'peer_message_test_helper'
 require_relative '../lib/kademlia/swarm'
 
 describe Swarm do

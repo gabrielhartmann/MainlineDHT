@@ -1,6 +1,7 @@
 require_relative 'test_helper'
 require_relative 'peer_test_helper'
 require_relative '../lib/kademlia/peer'
+require_relative '../lib/kademlia/swarm'
 
 describe Peer do
   test_id = "abcdefghijklmnoprstu"
@@ -35,6 +36,19 @@ describe Peer do
   it "must fail to determine whether an uninitialized Peer supports DHT" do
     p = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
     assert_raises(InvalidPeerError) { p.supports_dht? }
+  end
+
+  it "must be able to generate appropriate request messages" do
+    s = Swarm.new(Metainfo.default_file)
+    p = Peer.default
+    p.join(s)
+
+    have_message = HaveMessage.Create(0)
+    s.process_message(have_message, p)
+
+    request_message = p.get_next_request
+    request_message.class.must_equal RequestMessage
+    request_message.index.must_equal have_message.piece_index
   end
 
   it "must be able to read messages from the wire" do
