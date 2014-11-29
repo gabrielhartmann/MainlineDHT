@@ -117,4 +117,29 @@ describe BlockDirectory do
     block_dir.finish_block(0, 0)
     block_dir.pieces[0].blocks[0].complete?.must_equal true 
   end
+
+  it "can get the incomplete pieces which a particular peer can provide" do
+    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+
+    pieces = block_dir.incomplete_pieces(Peer.default)
+    pieces.length.must_equal 0
+    
+    block_dir.add_peer_to_piece(0, Peer.default)
+
+    pieces = block_dir.incomplete_pieces(Peer.default)
+    pieces.length.must_equal 1
+    pieces.first.must_equal block_dir.pieces[0]
+  end
+  
+  it "can get the incomplete blocks which a particular peer can provide" do
+    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+
+    pieces = block_dir.incomplete_blocks(Peer.default)
+    pieces.length.must_equal 0
+    
+    block_dir.add_peer_to_piece(0, Peer.default)
+
+    blocks = block_dir.incomplete_blocks(Peer.default)
+    blocks.length.must_equal 32
+  end
 end

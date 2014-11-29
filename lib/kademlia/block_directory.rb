@@ -26,12 +26,35 @@ class BlockDirectory
     return hashed_piece == hash_from_metainfo
   end
 
-  def completed_pieces
-    @pieces.select { |p| p.complete? }
+  def completed_pieces(peer = nil)
+    pieces = @pieces.select { |p| p.complete? }
+
+    if (peer)
+      pieces = pieces.select { |p| p.peers.include? peer }
+    end
+
+    return pieces
   end
 
-  def incomplete_pieces
-    @pieces.select { |p| (!p.complete?) }
+  def incomplete_pieces(peer = nil)
+    pieces = @pieces.select { |p| !p.complete? }
+
+    if (peer)
+      pieces = pieces.select { |p| p.peers.include? peer }
+    end
+
+    return pieces
+  end
+
+  def incomplete_blocks(peer = nil)
+    pieces = incomplete_pieces(peer)
+    blocks = Array.new
+
+    pieces.each do |p|
+      blocks.concat(p.incomplete_blocks)
+    end
+
+    return blocks
   end
 
   # Pieces which can be downloaded
@@ -61,23 +84,26 @@ class BlockDirectory
 
   def initialize_pieces
     pieces = Array.new
-    (0..@metainfo.info.pieces.length-2).each do |index|
-      pieces << Piece.new(@metainfo.info.piece_length)
+    piece_count = @metainfo.info.pieces.length
+    (0..piece_count-2).each do |index|
+      pieces << Piece.new(index, @metainfo.info.piece_length)
     end
 
     last_piece_length = @metainfo.info.length - (@metainfo.info.pieces.length - 1) * @metainfo.info.piece_length
-    pieces << Piece.new(last_piece_length)
+    pieces << Piece.new(piece_count-1, last_piece_length)
 
     return pieces
   end
 end
 
 class Piece
+  attr_reader :index
   attr_reader :length
   attr_reader :peers
   attr_reader :blocks
 
-  def initialize(length)
+  def initialize(index, length)
+    @index = index
     @length = length
     @peers = Array.new
     @blocks = initialize_blocks
@@ -116,7 +142,7 @@ class Piece
 
     while (length_left > 0)
       block_length = [Block.max_length, length_left].min
-      blocks << Block.new(offset, block_length)
+      blocks << Block.new(@index, offset, block_length)
       offset += block_length
       length_left -= block_length
     end
@@ -126,13 +152,15 @@ class Piece
 end
 
 class Block
-  attr_reader :length
+  attr_reader :index
   attr_reader :offset
+  attr_reader :length
   attr_writer :complete
 
   @@max_length = 2**14
   
-  def initialize(offset, length, complete = false)
+  def initialize(index, offset, length, complete = false)
+    @index = index
     @offset = offset
     @length = length
     @complete = complete
