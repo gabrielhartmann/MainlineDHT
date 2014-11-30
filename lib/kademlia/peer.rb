@@ -60,7 +60,7 @@ class Peer
   def join(swarm)
     @swarm = swarm
   end
-  
+
   def get_next_request(sample_size = @@request_sample_size)
     candidate_blocks = @swarm.block_directory.incomplete_blocks(self)
     candidate_blocks = candidate_blocks.first(sample_size)

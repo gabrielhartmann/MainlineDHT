@@ -12,7 +12,7 @@ class Swarm
   def initialize(torrent_file)
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
-    @torrent_file_io = TorrentFileIO.new(@metainfo, @metainfo.info.name + ".part")
+    @torrent_file_io = TorrentFileIO.new(@metainfo, torrent_file + ".part")
     @tracker = Tracker.new(@metainfo, @peer_id)
     @block_directory = BlockDirectory.new(@metainfo, @torrent_file_io)
     @peers = decode_peers(@tracker.peers)

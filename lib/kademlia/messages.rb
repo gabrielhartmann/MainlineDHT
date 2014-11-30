@@ -153,6 +153,12 @@ class BitfieldMessage < PayloadMessage
     raise MessageError, "A bitfield message must have a length of at least 2, not #{payload.length + 1}" if payload.length + 1 < 2 
     super(payload.length+1, 5, payload)
   end
+
+  # bitfield string should be a string like "0001101010101"
+  def self.Create(bitfield_string)
+    payload = [bitfield_string].pack("B*")
+    return BitfieldMessage.new(payload)
+  end
 end
 
 class RequestMessage < BlockMessage

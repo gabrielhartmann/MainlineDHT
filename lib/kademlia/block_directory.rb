@@ -3,18 +3,58 @@ require_relative 'block_directory_errors'
 class BlockDirectory
   attr_reader :pieces
 
-  def initialize(metainfo, torrent_file_io)
+  @@block_directory_bitfield_suffix = ".bitfield"
+
+  def initialize(metainfo, torrent_file_io, auto_refresh = true)
     @metainfo = metainfo
     @torrent_file_io = torrent_file_io
     @pieces = initialize_pieces 
+    @bitfield_file_name = @torrent_file_io.file_name + @@block_directory_bitfield_suffix 
+    refresh_pieces if auto_refresh
   end
 
   def refresh_pieces
-    (0..@metainfo.info.pieces.length-1).each do |index|
-      @pieces[index].finish if piece_finished?(index)
+    if (File.exists?(@bitfield_file_name))
+      read_bitfield
+    else
+      puts "#{@bitfield_file_name} doesn't exist."
+      piece_array_length = @metainfo.info.pieces.length
+      threads = Array.new
+
+      @pieces.each do |piece|
+	print "#{piece.index.to_f/pieces.length * 100.0} "
+	piece.finish if piece_finished?(piece.index)
+      end
+
+      write_bitfield
     end
 
     return @pieces
+  end
+
+  def read_bitfield
+    @bitfield = Marshal.load(File.read(@bitfield_file_name)) 
+    decoded_bitfield = @bitfield.payload.unpack("B*").first
+
+    @pieces.each do |piece|
+      piece.finish if decoded_bitfield[piece.index] == "1"
+    end
+  end
+
+  def write_bitfield
+    bitfield_string = String.new
+
+    @pieces.each do |piece|
+      if (piece.complete?)
+	bitfield_string << "1"
+      else
+	bitfield_string << "0"
+      end
+    end
+
+    File.delete(@bitfield_file_name) if File.exists(@bitfield_file_name)
+    @bitfield = BitfieldMessage.Create(bitfield_string)
+    File.open(@bitfield_file_name, 'w') { |f| f.write(Marshal.dump(@bitfield)); f.close }
   end
 
   def piece_finished?(index)
@@ -22,7 +62,8 @@ class BlockDirectory
 
     hash_from_metainfo = @metainfo.info.pieces[index]
     piece_from_file = @torrent_file_io.read(index, 0, @metainfo.info.piece_length) 
-    hashed_piece = Digest::SHA1.digest(piece_from_file.block)
+    block = piece_from_file.block
+    hashed_piece = Digest::SHA1.digest(block)
     return hashed_piece == hash_from_metainfo
   end
 
@@ -68,6 +109,16 @@ class BlockDirectory
 
   def finish_block(piece_index, block_index)
     @pieces[piece_index].finish_block(block_index)
+
+    # All blocks marked completed
+    if (@pieces[piece_index].complete?)
+      # Block hashes properly
+      if (piece_finished?(piece_index))
+	write_bitfield
+      else
+	@pieces[piece_index].clear
+      end
+    end
   end
 
   def add_peer_to_piece(index, peer)
@@ -112,6 +163,12 @@ class Piece
   def finish 
     @blocks.each do |block|
       block.complete = true
+    end
+  end
+
+  def clear
+    @blocks.each do |block|
+      block.complete = false
     end
   end
 

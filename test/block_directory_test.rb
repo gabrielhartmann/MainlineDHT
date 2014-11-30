@@ -1,14 +1,15 @@
 require_relative 'test_helper'
 require_relative 'metainfo_test_helper'
 require_relative 'peer_test_helper'
+require_relative 'block_directory_test_helper'
 require_relative '../lib/kademlia/block_directory'
 require_relative '../lib/kademlia/torrent_file_io'
 
 describe BlockDirectory do
   it "can be created" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
     block_dir.pieces.length.must_equal 1522
-    block_dir.completed_pieces.length.must_equal 0
+    block_dir.completed_pieces.length.must_equal 1
   end
 
   it "can determine the complete pieces of a partial file" do
@@ -48,7 +49,7 @@ describe BlockDirectory do
   end
 
   it "can add peers to pieces" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
     block_dir.available_pieces.length.must_equal 0
 
     # Add a peer to a piece and verify length and contents of the Piece's Peers
@@ -63,7 +64,7 @@ describe BlockDirectory do
   end
 
   it "can remove a peer from all pieces" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
     block_dir.available_pieces.length.must_equal 0
     
     block_dir.add_peer_to_piece(0, Peer.default)
@@ -74,13 +75,13 @@ describe BlockDirectory do
   end
 
   it "can determine the pieces available for download" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
     block_dir.add_peer_to_piece(0, Peer.default)
     block_dir.available_pieces.length.must_equal 1
   end
 
   it "can determine available and unavailable pieces before and after a peer is added" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default), false)
 
     unavailable_piece_count = block_dir.incomplete_pieces.length
     available_piece_count = block_dir.completed_pieces.length
@@ -92,7 +93,7 @@ describe BlockDirectory do
   end
 
   it "generates valid block offsets and sizes for all pieces" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
 
     block_dir.pieces.each do |piece|
       block_length_sum = 0
@@ -112,14 +113,14 @@ describe BlockDirectory do
   end
 
   it "can mark a block as complete" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
     block_dir.pieces[0].blocks[0].complete?.must_equal false
     block_dir.finish_block(0, 0)
     block_dir.pieces[0].blocks[0].complete?.must_equal true 
   end
 
   it "can get the incomplete pieces which a particular peer can provide" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
 
     pieces = block_dir.incomplete_pieces(Peer.default)
     pieces.length.must_equal 0
@@ -132,7 +133,7 @@ describe BlockDirectory do
   end
   
   it "can get the incomplete blocks which a particular peer can provide" do
-    block_dir = BlockDirectory.new(Metainfo.default, TorrentFileIO.new(Metainfo.default))
+    block_dir = BlockDirectory.default
 
     pieces = block_dir.incomplete_blocks(Peer.default)
     pieces.length.must_equal 0
