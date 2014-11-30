@@ -12,6 +12,9 @@ class BlockDirectory
     @pieces = initialize_pieces 
     @blocks = all_blocks
     @bitfield_file_name = @torrent_file_io.file_name + @@block_directory_bitfield_suffix 
+
+    # This creates an @bitfield member which is a BitfieldMessage
+    # It is updated when Pieces are completed
     refresh_pieces if auto_refresh
   end
 
@@ -139,7 +142,7 @@ class BlockDirectory
 
     @pieces[piece_index].finish_block(piece_message.begin)
 
-    # All blocks marked completed
+    # All blocks in the piece are marked completed
     if (@pieces[piece_index].complete?)
       # Block hashes properly
       if (piece_finished?(piece_index))
