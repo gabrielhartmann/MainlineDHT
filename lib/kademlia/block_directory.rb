@@ -262,6 +262,10 @@ class Block
     @complete = complete
   end
 
+  def ==(another_block)
+    return @index == another_block.index && @offset == another_block.offset && @length == another_block.length
+  end
+
   def self.max_length
     @@max_length
   end

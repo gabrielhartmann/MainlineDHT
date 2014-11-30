@@ -10,23 +10,25 @@ describe Swarm do
 
   it "can handle a HaveMessage" do
     s = Swarm.new(Metainfo.default_file)
-
-    payload = PeerMessage.id_to_wire(4) + [0].pack("L>")
-    have_message = PeerMessage.Create(5, payload)
-    have_message.class.must_equal HaveMessage
-
+    have_message = HaveMessage.Create(0)
     s.process_message(have_message, Peer.default)
   end
 
   it "can handle a BitfieldMessage" do
     s = Swarm.new(Metainfo.default_file)
-
-    # simulating a payload for the bitfield of 0b00000011
-    payload = PeerMessage.id_to_wire(5) + [3].pack("C")
-    bitfield_message = PeerMessage.Create(2, payload)
-    bitfield_message.class.must_equal BitfieldMessage
-
+    bitfield_message = BitfieldMessage.Create("00000011")
     s.process_message(bitfield_message, Peer.default)
+  end
+
+  it "can handle a PieceMessage" do
+    s = Swarm.new(Metainfo.default_file)
+    b_dir = s.block_directory
+    b_dir.completed_blocks.include?(b_dir.pieces[0].blocks[0]).must_equal false
+
+    piece_message = PieceMessage.Create(0, 0, "A")
+    s.process_message(piece_message, Peer.default)
+    
+    b_dir.completed_blocks.include?(b_dir.pieces[0].blocks[0]).must_equal true 
   end
 
   it "can determine the interesting peers" do
