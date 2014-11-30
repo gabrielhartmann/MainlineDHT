@@ -115,7 +115,10 @@ describe BlockDirectory do
   it "can mark a block as complete" do
     block_dir = BlockDirectory.default
     block_dir.pieces[0].blocks[0].complete?.must_equal false
-    block_dir.finish_block(0, 0)
+    
+    piece_message = PieceMessage.Create(0, 0, "A")
+    block_dir.finish_block(piece_message)
+
     block_dir.pieces[0].blocks[0].complete?.must_equal true 
   end
 

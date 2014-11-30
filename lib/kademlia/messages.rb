@@ -192,6 +192,10 @@ class PieceMessage < PayloadMessage
   def self.get_payload(idx, bgn, block)
     [idx, bgn, block.bytes].flatten.pack("L>L>C*")
   end
+
+  def self.Create(idx, bgn, block)
+    return PieceMessage.new(PieceMessage.get_payload(idx, bgn, block))
+  end
 end
 
 class CancelMessage < BlockMessage

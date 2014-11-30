@@ -107,8 +107,10 @@ class BlockDirectory
     incomplete_pieces.select { |p| p.peers.length == 0 }
   end
 
-  def finish_block(piece_index, block_index)
-    @pieces[piece_index].finish_block(block_index)
+  def finish_block(piece_message)
+    piece_index = piece_message.index
+
+    @pieces[piece_index].finish_block(piece_message.begin)
 
     # All blocks marked completed
     if (@pieces[piece_index].complete?)
@@ -116,6 +118,7 @@ class BlockDirectory
       if (piece_finished?(piece_index))
 	write_bitfield
       else
+	puts "Error: Piece was supposed to be complete, but did not hash correctly."
 	@pieces[piece_index].clear
       end
     end
@@ -172,8 +175,13 @@ class Piece
     end
   end
 
-  def finish_block(index)
-    @blocks[index].complete = true
+  def finish_block(offset)
+    @blocks.each do |b|
+      if (b.offset == offset)
+	b.complete = true 
+	return
+      end
+    end
   end
 
   def incomplete_blocks
