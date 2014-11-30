@@ -10,14 +10,28 @@ describe Swarm do
 
   it "can handle a HaveMessage" do
     s = Swarm.new(Metainfo.default_file)
+    b_dir = s.block_directory
+    peer = Peer.default
+    b_dir.all_pieces(peer).include?(b_dir.pieces[0]).must_equal false 
+    
     have_message = HaveMessage.Create(0)
-    s.process_message(have_message, Peer.default)
+    s.process_message(have_message, peer)
+    
+    b_dir.all_pieces(peer).include?(b_dir.pieces[0]).must_equal true 
   end
 
   it "can handle a BitfieldMessage" do
     s = Swarm.new(Metainfo.default_file)
+    b_dir = s.block_directory
+    peer = Peer.default
+    b_dir.all_pieces(peer).include?(b_dir.pieces[6]).must_equal false
+    b_dir.all_pieces(peer).include?(b_dir.pieces[7]).must_equal false 
+
     bitfield_message = BitfieldMessage.Create("00000011")
-    s.process_message(bitfield_message, Peer.default)
+    s.process_message(bitfield_message, peer)
+
+    b_dir.all_pieces(peer).include?(b_dir.pieces[6]).must_equal true
+    b_dir.all_pieces(peer).include?(b_dir.pieces[7]).must_equal true 
   end
 
   it "can handle a PieceMessage" do
