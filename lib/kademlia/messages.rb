@@ -83,7 +83,7 @@ class PayloadMessage < PeerMessage
   end
 
   def to_wire
-    peer_wire_message = super.to_wire
+    peer_wire_message = super
     wire_message = peer_wire_message + payload
   end
 end

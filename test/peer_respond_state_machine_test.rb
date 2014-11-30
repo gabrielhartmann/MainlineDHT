@@ -1,12 +1,18 @@
 require_relative 'test_helper'
 require_relative 'peer_test_helper'
+require_relative 'swarm_test_helper'
 require_relative '../lib/kademlia/peer_respond_state_machine'
 
 describe PeerRespondStateMachine do
+  def get_random_peer
+    p = Peer.random
+    p.join(Swarm.default)
+    return p
+  end
 
   it "must be able to transition from neutral to wait_unchoke and back" do
     # Initialization is as expected
-    test_machine = PeerRespondStateMachine.new
+    test_machine = PeerRespondStateMachine.new(get_random_peer)
     test_machine.neutral?.must_equal true
 
     # Transition from neutral to wait_unchoke
@@ -22,7 +28,7 @@ describe PeerRespondStateMachine do
 
   it "must be able to transition from neutral to wait_unchoke to respond to wait_unchoke" do
     # Initialization is as expected
-    test_machine = PeerRespondStateMachine.new
+    test_machine = PeerRespondStateMachine.new(get_random_peer)
     test_machine.neutral?.must_equal true
 
     # Transition from neutral to wait_unchoke
@@ -43,7 +49,7 @@ describe PeerRespondStateMachine do
   
   it "must be able to transition from neutral to wait_unchoke to respond to wait_interest to respond" do
     # Initialization is as expected
-    test_machine = PeerRespondStateMachine.new
+    test_machine = PeerRespondStateMachine.new(get_random_peer)
     test_machine.neutral?.must_equal true
 
     # Transition from neutral to wait_unchoke
@@ -69,7 +75,7 @@ describe PeerRespondStateMachine do
 
   it "must be able to transition from neutral to wait_interest to neutral" do
     # Initialization is as expected
-    test_machine = PeerRespondStateMachine.new
+    test_machine = PeerRespondStateMachine.new(get_random_peer)
     test_machine.neutral?.must_equal true
 
     # Transition from neutral to wait_interest

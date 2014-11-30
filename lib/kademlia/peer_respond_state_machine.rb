@@ -1,10 +1,13 @@
 require 'workflow'
 require_relative 'state_machine_errors'
+require_relative 'messages'
 
 class PeerRespondStateMachine
-  def initialize
+  def initialize(peer = nil)
+    @peer = peer
     @am_choking = true
     @peer_interested = false
+    connect!
   end
 
   def am_choking?
@@ -33,6 +36,10 @@ class PeerRespondStateMachine
 
   include Workflow
   workflow do
+    state :disconnected do
+      event :connect, :transitions_to => :neutral
+    end
+
     state :neutral do
       event :recv_interested, :transitions_to => :wait_unchoke
       event :send_unchoke, :transitions_to => :wait_interest
@@ -40,6 +47,10 @@ class PeerRespondStateMachine
       on_entry do
         raise InvalidStateInvariant, "Am choking must be true." unless am_choking?
         raise InvalidStateInvariant, "Peer interested must be false." if peer_interested?
+
+	if (@peer.is_interesting?)
+	  @peer.write(UnchokeMessage.new)
+	end
       end
     end
 

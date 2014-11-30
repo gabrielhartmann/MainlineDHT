@@ -52,7 +52,7 @@ describe Peer do
   end
   
   it "must be able to determine whether it is interesting" do
-    s = Swarm.new(Metainfo.default_file)
+    s = Swarm.default
     p = Peer.default
     p.join(s)
 
@@ -62,6 +62,13 @@ describe Peer do
     s.process_message(have_message, p)
 
     p.is_interesting?.must_equal true
+  end
+
+  it "must be able to connect" do
+    s = Swarm.default
+    p = Peer.default
+    p.join(s)
+    p.connect
   end
 
   it "must be able to read messages from the wire" do

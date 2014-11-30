@@ -2,6 +2,7 @@ require_relative 'peer_errors'
 require_relative 'handshake_response'
 require_relative 'messages'
 require_relative 'peer_socket'
+require_relative 'peer_respond_state_machine'
 
 class Peer
   attr_reader :id
@@ -54,11 +55,24 @@ class Peer
   end
 
   def write(message)
-    @socket.write(messge)
+    #puts "Writing: #{message}"
+    @socket.write(message)
+
+    case message.class
+    when UnchokeMessage
+      @respond_machine.send_unchoke
+    end
   end
 
   def join(swarm)
     @swarm = swarm
+  end
+
+  def connect
+    raise InvalidPeerState, "Cannot connect a peer without a Swarm." unless @swarm
+    shake_hands
+    write(@swarm.block_directory.bitfield)
+    @respond_machine = PeerRespondStateMachine.new(self)
   end
 
   def get_next_request(sample_size = @@request_sample_size)

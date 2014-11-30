@@ -3,6 +3,7 @@ require_relative 'block_directory_errors'
 class BlockDirectory
   attr_reader :pieces
   attr_reader :blocks
+  attr_reader :bitfield
 
   @@block_directory_bitfield_suffix = ".bitfield"
 

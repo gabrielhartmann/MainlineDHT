@@ -19,4 +19,8 @@ class Peer
 
     return @@default_peers
   end
+
+  def self.random
+    Peer.default_peers.sample
+  end
 end
