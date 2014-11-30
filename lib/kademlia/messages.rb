@@ -159,6 +159,10 @@ class BitfieldMessage < PayloadMessage
     payload = [bitfield_string].pack("B*")
     return BitfieldMessage.new(payload)
   end
+
+  def to_s
+    "#{@payload.unpack("B*").first}"
+  end
 end
 
 class RequestMessage < BlockMessage

@@ -28,6 +28,9 @@ class Swarm
       (0..bitfield.length-1).each do |index|
 	@block_directory.add_peer_to_piece(index, peer) if bitfield[index] == "1"
       end
+    when PieceMessage
+      @torrent_file_io.write(message)
+      @block_directory.finish_block(message)
     else
       raise SwarmError, "Cannot process unsupported message: #{message.inspect}" 
     end

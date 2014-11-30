@@ -2,6 +2,7 @@ require_relative 'block_directory_errors'
 
 class BlockDirectory
   attr_reader :pieces
+  attr_reader :blocks
 
   @@block_directory_bitfield_suffix = ".bitfield"
 
@@ -9,8 +10,27 @@ class BlockDirectory
     @metainfo = metainfo
     @torrent_file_io = torrent_file_io
     @pieces = initialize_pieces 
+    @blocks = all_blocks
     @bitfield_file_name = @torrent_file_io.file_name + @@block_directory_bitfield_suffix 
     refresh_pieces if auto_refresh
+  end
+
+  def to_s
+    s = "\n"
+    s << "bitfield: #{@bitfield}\n"
+    s << "completed pieces: #{completed_pieces_percentage.round(2)}%\n"
+    s << "completed pieces count: #{completed_pieces.length}\n"
+    s << "completed blocks: #{completed_blocks_percentage.round(2)}%\n"
+    s << "completed blocks count: #{completed_blocks.length}\n"
+    s << "unavailable pieces: #{unavailable_pieces.length}\n"
+  end
+
+  def completed_pieces_percentage
+    completed_pieces.length.to_f / @pieces.length * 100.0
+  end
+
+  def completed_blocks_percentage
+    completed_blocks.length.to_f / @blocks.length * 100.0
   end
 
   def refresh_pieces
@@ -67,8 +87,8 @@ class BlockDirectory
     return hashed_piece == hash_from_metainfo
   end
 
-  def completed_pieces(peer = nil)
-    pieces = @pieces.select { |p| p.complete? }
+  def all_pieces(peer = nil)
+    pieces = @pieces
 
     if (peer)
       pieces = pieces.select { |p| p.peers.include? peer }
@@ -77,30 +97,37 @@ class BlockDirectory
     return pieces
   end
 
+  def completed_pieces(peer = nil)
+    all_pieces(peer).select { |p| p.complete? }
+  end
+
   def incomplete_pieces(peer = nil)
-    pieces = @pieces.select { |p| !p.complete? }
-
-    if (peer)
-      pieces = pieces.select { |p| p.peers.include? peer }
-    end
-
+    pieces = all_pieces(peer).select { |p| !p.complete? }
     return pieces.sort_by! { |p| p.peers.length }
   end
 
-  def incomplete_blocks(peer = nil)
-    pieces = incomplete_pieces(peer)
+  def all_blocks(peer = nil)
+    pieces = all_pieces(peer)
     blocks = Array.new
 
     pieces.each do |p|
-      blocks.concat(p.incomplete_blocks)
+      blocks.concat(p.blocks)
     end
 
     return blocks
   end
 
+  def incomplete_blocks(peer = nil)
+    blocks = all_blocks(peer).select { |b| !b.complete? }
+  end
+  
+  def completed_blocks(peer = nil)
+    blocks = all_blocks(peer).select { |b| b.complete? }
+  end
+
   # Pieces which can be downloaded
   def available_pieces
-    incomplete_pieces.select { |p| p.peers.length > 0 }
+    all_pieces.select { |p| p.peers.length > 0 }
   end
 
   def unavailable_pieces
@@ -186,6 +213,10 @@ class Piece
 
   def incomplete_blocks
     @blocks.select { |b| !b.complete? }
+  end
+
+  def complete_blocks
+    @blocks.select { |b| b.complete? }
   end
 
   def complete?
