@@ -27,6 +27,7 @@ class BlockDirectory
     s << "completed blocks: #{completed_blocks_percentage.round(2)}%\n"
     s << "completed blocks count: #{completed_blocks.length}\n"
     s << "unavailable pieces: #{unavailable_pieces.length}\n"
+    s << "available pieces: #{available_pieces.length}\n"
   end
 
   def completed_pieces_percentage
@@ -54,6 +55,14 @@ class BlockDirectory
     end
 
     return @pieces
+  end
+
+  def clear_piece_blocks(index)
+    @pieces[index].clear_blocks
+  end
+
+  def clear_piece_peers(index)
+    @pieces[index].clear_peers
   end
 
   def read_bitfield
@@ -150,7 +159,7 @@ class BlockDirectory
 	write_bitfield
       else
 	puts "Error: Piece was supposed to be complete, but did not hash correctly."
-	@pieces[piece_index].clear
+	clear_piece_blocks(piece_index)
       end
     end
   end
@@ -200,10 +209,14 @@ class Piece
     end
   end
 
-  def clear
+  def clear_blocks
     @blocks.each do |block|
       block.complete = false
     end
+  end
+
+  def clear_peers
+    @peers = Array.new
   end
 
   def finish_block(offset)

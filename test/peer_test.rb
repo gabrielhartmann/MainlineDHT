@@ -54,14 +54,17 @@ describe Peer do
   it "must be able to determine whether it is interesting" do
     s = Swarm.default
     p = Peer.default
+    piece_index = 0
     p.join(s)
 
     p.is_interesting?.must_equal false
 
-    have_message = HaveMessage.Create(0)
+    have_message = HaveMessage.Create(piece_index)
     s.process_message(have_message, p)
 
     p.is_interesting?.must_equal true
+    s.block_directory.clear_piece_peers(piece_index)
+    p.is_interesting?.must_equal false
   end
 
   it "must be able to connect" do
@@ -69,6 +72,7 @@ describe Peer do
     p = Peer.default
     p.join(s)
     p.connect
+    p.is_interesting?.must_equal false
   end
 
   it "must be able to read messages from the wire" do

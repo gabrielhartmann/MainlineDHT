@@ -6,7 +6,7 @@ class Peer
 
   def self.default
     if (!@@default_peer)
-      @@default_peer = Swarm.default.peers.first
+      @@default_peer = Swarm.default.peers.sample
     end
 
     return @@default_peer
