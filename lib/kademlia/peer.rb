@@ -26,6 +26,7 @@ class Peer
     @hashed_info = hashed_info
     @local_peer_id = local_peer_id
     @socket = PeerSocket.open(self)
+    @msg_recv_queue = Queue.new
   end
 
   def ==(another_peer)
@@ -55,12 +56,12 @@ class Peer
   end
 
   def write(message)
-    #puts "Writing: #{message}"
+    puts "Writing to #{@ip}: #{message.class}"
     @socket.write(message)
 
-    case message.class
+    case message
     when UnchokeMessage
-      @respond_machine.send_unchoke
+      @respond_machine.send_unchoke!
     end
   end
 
@@ -73,6 +74,52 @@ class Peer
     shake_hands
     write(@swarm.block_directory.bitfield)
     @respond_machine = PeerRespondStateMachine.new(self)
+    start_msg_processing_thread
+    start_read_thread
+  end
+
+  def disconnect
+    stop_read_thread
+    stop_msg_processing_thread
+    @msg_recv_queue = Queue.new
+  end
+
+  def process_msg(msg)
+    case msg
+    when HaveMessage, BitfieldMessage
+      @swarm.process_message(msg, self)
+      @respond_machine.recv_have_message!
+    end
+  end
+
+  def start_msg_processing_thread
+    # puts "Starting the message processing thread for #{@ip}"
+
+    @msg_proc_thread = Thread.new do
+      loop do
+	process_msg(@msg_recv_queue.pop)
+      end
+    end
+  end
+
+  def stop_msg_processing_thread
+    @msg_proc_thread.kill
+  end
+
+  def start_read_thread
+    # puts "Starting the read thread for #{@ip}"
+
+    @read_thread = Thread.new do
+      loop do
+	msg = read_next_message
+	puts "Received from #{@ip}: #{msg.class}"
+	@msg_recv_queue.push(msg)
+      end
+    end
+  end
+
+  def stop_read_thread
+    @read_thread.kill
   end
 
   def get_next_request(sample_size = @@request_sample_size)

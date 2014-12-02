@@ -10,6 +10,10 @@ class PeerSocket
     PeerSocket.new(peer)
   end
 
+  def close
+    @socket.close if @socket
+  end
+
   def shake_hands
     @socket = TCPSocket.open(@peer.ip, @peer.port)
     @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);

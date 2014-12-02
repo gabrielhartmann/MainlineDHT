@@ -43,6 +43,7 @@ class PeerRespondStateMachine
     state :neutral do
       event :recv_interested, :transitions_to => :wait_unchoke
       event :send_unchoke, :transitions_to => :wait_interest
+      event :recv_have_message, :transitions_to => :neutral
 
       on_entry do
         raise InvalidStateInvariant, "Am choking must be true." unless am_choking?
@@ -85,7 +86,7 @@ class PeerRespondStateMachine
     end
 
     on_transition do |from, to, triggering_event, *event_args|
-      # puts "#{triggering_event}: #{from} -> #{to}"
+      puts "#{triggering_event}: #{from} -> #{to}"
     end
   end
 end 

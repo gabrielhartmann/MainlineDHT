@@ -161,7 +161,7 @@ class BitfieldMessage < PayloadMessage
   end
 
   def to_s
-    "#{@payload.unpack("B*").first}"
+    "Bitfield: #{@payload.unpack("B*").first}"
   end
 end
 

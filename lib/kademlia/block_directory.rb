@@ -65,6 +65,19 @@ class BlockDirectory
     @pieces[index].clear_peers
   end
 
+  def clear_peers
+    @pieces.each { |p| p.clear_peers }
+  end
+
+  def clear_blocks
+    @pieces.each { |p| p.clear_blocks }
+  end
+
+  def clear
+    clear_peers
+    clear_blocks
+  end
+
   def read_bitfield
     @bitfield = Marshal.load(File.read(@bitfield_file_name)) 
     decoded_bitfield = @bitfield.payload.unpack("B*").first

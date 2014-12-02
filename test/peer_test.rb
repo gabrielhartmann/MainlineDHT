@@ -67,12 +67,15 @@ describe Peer do
     p.is_interesting?.must_equal false
   end
 
-  it "must be able to connect" do
+  it "must be able to connect and disconnect from a peer" do
     s = Swarm.default
     p = Peer.default
     p.join(s)
     p.connect
-    p.is_interesting?.must_equal false
+    sleep(10)
+    p.disconnect
+
+    s.block_directory.clear
   end
 
   it "must be able to read messages from the wire" do
