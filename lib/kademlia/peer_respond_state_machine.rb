@@ -3,7 +3,8 @@ require_relative 'state_machine_errors'
 require_relative 'messages'
 
 class PeerRespondStateMachine
-  def initialize(peer = nil)
+  def initialize(peer)
+    @logger = peer.logger
     @peer = peer
     @am_choking = true
     @peer_interested = false
@@ -86,7 +87,7 @@ class PeerRespondStateMachine
     end
 
     on_transition do |from, to, triggering_event, *event_args|
-      puts "#{triggering_event}: #{from} -> #{to}"
+      @logger.debug "#{triggering_event}: #{from} -> #{to}"
     end
   end
 end 

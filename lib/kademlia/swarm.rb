@@ -1,3 +1,4 @@
+require 'logger'
 require_relative 'metainfo'
 require_relative 'torrent_file_io'
 require_relative 'tracker'
@@ -9,7 +10,9 @@ class Swarm
   attr_reader :peers
   attr_reader :block_directory
 
-  def initialize(torrent_file)
+  def initialize(torrent_file, log_level = Logger::DEBUG)
+    @logger = Logger.new('swarm.log', 10, 1024000)
+    @logger.level = log_level
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
     @torrent_file_io = TorrentFileIO.new(@metainfo, torrent_file + ".part")
@@ -55,7 +58,7 @@ class Swarm
     while index + 6 <= encoded_peers.length
       ip = encoded_peers[index,4].unpack("CCCC").join('.')
       port = encoded_peers[index+4,2].unpack("n").first
-      peers.push Peer.new(ip, port, @tracker.hashed_info, @peer_id)
+      peers.push Peer.new(@logger, ip, port, @tracker.hashed_info, @peer_id)
       index += 6
     end
 

@@ -5,6 +5,7 @@ require_relative 'peer_socket'
 require_relative 'peer_respond_state_machine'
 
 class Peer
+  attr_reader :logger
   attr_reader :id
   attr_reader :am_choking
   attr_reader :am_interested
@@ -18,8 +19,9 @@ class Peer
   @@dht_bitmask = 0x0000000000000001
   @@request_sample_size = 10
 
-  def initialize(ip, port, hashed_info, local_peer_id, id = generate_id)
+  def initialize(logger, ip, port, hashed_info, local_peer_id, id = generate_id)
     raise InvalidPeerError, "The hashed info cannot be null" unless hashed_info
+    @logger = logger
     @ip = ip
     @id = set_id(id)
     @port = port
@@ -56,7 +58,7 @@ class Peer
   end
 
   def write(message)
-    puts "Writing to #{@ip}: #{message.class}"
+    @logger.debug "#{@ip}:#{@port} Writing #{message.class}"
     @socket.write(message)
 
     case message
@@ -89,11 +91,13 @@ class Peer
     when HaveMessage, BitfieldMessage
       @swarm.process_message(msg, self)
       @respond_machine.recv_have_message!
+    else
+      @logger.debug "#{@ip}:#{@port} Dropping #{msg.class}"
     end
   end
 
   def start_msg_processing_thread
-    # puts "Starting the message processing thread for #{@ip}"
+    @logger.debug "#{@ip}:#{@port} Starting the message processing thread"
 
     @msg_proc_thread = Thread.new do
       loop do
@@ -107,12 +111,12 @@ class Peer
   end
 
   def start_read_thread
-    # puts "Starting the read thread for #{@ip}"
+    @logger.debug "#{@ip}:#{@port} Starting the read thread"
 
     @read_thread = Thread.new do
       loop do
 	msg = read_next_message
-	puts "Received from #{@ip}: #{msg.class}"
+	@logger.debug "#{@ip}:#{@port} Received #{msg.class}"
 	@msg_recv_queue.push(msg)
       end
     end

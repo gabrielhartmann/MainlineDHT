@@ -19,7 +19,7 @@ describe Peer do
   end 
 
   it "must fail to create a node with an invalid id" do
-    assert_raises(InvalidPeerError) { peer = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id, test_id + "1") }
+    assert_raises(InvalidPeerError) { peer = Peer.new(nil, test_ip, test_port, test_hashed_info, test_local_peer_id, test_id + "1") }
   end
 
   it "must be able to shake hands" do
@@ -34,7 +34,7 @@ describe Peer do
   end
 
   it "must fail to determine whether an uninitialized Peer supports DHT" do
-    p = Peer.new(test_ip, test_port, test_hashed_info, test_local_peer_id)
+    p = Peer.new(nil, test_ip, test_port, test_hashed_info, test_local_peer_id)
     assert_raises(InvalidPeerError) { p.supports_dht? }
   end
 
@@ -72,7 +72,7 @@ describe Peer do
     p = Peer.default
     p.join(s)
     p.connect
-    sleep(10)
+    sleep(3)
     p.disconnect
 
     s.block_directory.clear
