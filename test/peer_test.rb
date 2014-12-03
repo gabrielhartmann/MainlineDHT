@@ -72,8 +72,17 @@ describe Peer do
     p = Peer.default
     p.join(s)
     p.connect
+
+    p.msg_proc_thread.alive?.must_equal true 
+    p.read_thread.alive?.must_equal true
+    p.write_thread.alive?.must_equal true
+
     sleep(3)
     p.disconnect
+
+    p.msg_proc_thread.stop?.must_equal true 
+    p.read_thread.stop?.must_equal true 
+    p.write_thread.stop?.must_equal true 
 
     s.block_directory.clear
   end

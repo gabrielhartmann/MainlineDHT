@@ -3,6 +3,7 @@ require_relative 'handshake_response'
 require_relative 'messages'
 require_relative 'peer_socket'
 require_relative 'peer_respond_state_machine'
+require_relative 'peer_send_state_machine'
 
 class Peer
   attr_reader :logger
@@ -15,6 +16,9 @@ class Peer
   attr_reader :port
   attr_reader :hashed_info
   attr_reader :local_peer_id
+  attr_reader :msg_proc_thread
+  attr_reader :read_thread
+  attr_reader :write_thread
 
   @@dht_bitmask = 0x0000000000000001
   @@request_sample_size = 10
@@ -29,6 +33,7 @@ class Peer
     @local_peer_id = local_peer_id
     @socket = PeerSocket.open(self)
     @msg_recv_queue = Queue.new
+    @msg_send_queue = Queue.new
   end
 
   def ==(another_peer)
@@ -58,13 +63,7 @@ class Peer
   end
 
   def write(message)
-    @logger.debug "#{@ip}:#{@port} Writing #{message.class}"
-    @socket.write(message)
-
-    case message
-    when UnchokeMessage
-      @respond_machine.send_unchoke!
-    end
+    @msg_send_queue.push(message)
   end
 
   def join(swarm)
@@ -76,23 +75,37 @@ class Peer
     shake_hands
     write(@swarm.block_directory.bitfield)
     @respond_machine = PeerRespondStateMachine.new(self)
+    @send_machine = PeerSendStateMachine.new(self)
     start_msg_processing_thread
     start_read_thread
+    start_write_thread
   end
 
   def disconnect
     stop_read_thread
     stop_msg_processing_thread
+    stop_write_thread
     @msg_recv_queue = Queue.new
+    @msg_send_queue = Queue.new
   end
 
-  def process_msg(msg)
+  def process_read_msg(msg)
     case msg
     when HaveMessage, BitfieldMessage
       @swarm.process_message(msg, self)
       @respond_machine.recv_have_message!
+      @send_machine.recv_have_message!
     else
-      @logger.debug "#{@ip}:#{@port} Dropping #{msg.class}"
+      @logger.debug "#{@ip}:#{@port} Read dropping #{msg.class}"
+    end
+  end
+
+  def process_write_msg(msg)
+    case msg
+    when UnchokeMessage
+      @respond_machine.send_unchoke!
+    else
+      @logger.debug "#{@ip}:#{@port} Write dropping #{msg.class}"
     end
   end
 
@@ -101,13 +114,13 @@ class Peer
 
     @msg_proc_thread = Thread.new do
       loop do
-	process_msg(@msg_recv_queue.pop)
+	process_read_msg(@msg_recv_queue.pop)
       end
     end
   end
 
   def stop_msg_processing_thread
-    @msg_proc_thread.kill
+    @logger.debug Thread.kill(@msg_proc_thread)
   end
 
   def start_read_thread
@@ -123,7 +136,25 @@ class Peer
   end
 
   def stop_read_thread
-    @read_thread.kill
+    Thread.kill(@read_thread)
+  end
+
+  def start_write_thread
+    @logger.debug "#{@ip}:#{@port} Starting the write thread"
+
+    @write_thread = Thread.new do
+      loop do
+	msg = @msg_send_queue.pop
+	@logger.debug "#{@ip}:#{@port} Writing #{msg.class}"
+	@socket.write(msg)
+
+	process_write_msg(msg)
+      end
+    end
+  end
+
+  def stop_write_thread
+    Thread.kill(@write_thread)
   end
 
   def get_next_request(sample_size = @@request_sample_size)

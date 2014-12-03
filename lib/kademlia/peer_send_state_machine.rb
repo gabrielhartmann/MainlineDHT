@@ -2,7 +2,11 @@ require 'workflow'
 require_relative 'state_machine_errors'
 
 class PeerSendStateMachine
-  def initialize
+  def initialize(peer)
+    @peer = peer
+    @logger = peer.logger
+    @ip = peer.ip
+    @port = peer.port
     @am_interested = false
     @peer_choking = true
   end
@@ -36,10 +40,15 @@ class PeerSendStateMachine
     state :neutral do
       event :send_interested, :transitions_to => :wait_unchoke
       event :recv_unchoke, :transitions_to => :wait_interest
+      event :recv_have_message, :transitions_to => :neutral
 
       on_entry do
         raise InvalidStateInvariant, "Am interested must be false." if am_interested?
         raise InvalidStateInvariant, "Peer choking must be true." unless peer_choking?
+
+	if (@peer.is_interesting?)
+	  @peer.write(InterestedMessage.new)
+	end
       end
     end
 
@@ -74,7 +83,7 @@ class PeerSendStateMachine
     end
 
     on_transition do |from, to, triggering_event, *event_args|
-     # puts "#{triggering_event}: #{from} -> #{to}"
+      @logger.debug "#{@ip}:#{@port} SST: #{triggering_event}: #{from} -> #{to}"
     end
   end
 end 

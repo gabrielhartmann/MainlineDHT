@@ -4,11 +4,12 @@ require_relative 'messages'
 
 class PeerRespondStateMachine
   def initialize(peer)
-    @logger = peer.logger
     @peer = peer
+    @logger = peer.logger
+    @ip = peer.ip
+    @port = peer.port
     @am_choking = true
     @peer_interested = false
-    connect!
   end
 
   def am_choking?
@@ -37,10 +38,6 @@ class PeerRespondStateMachine
 
   include Workflow
   workflow do
-    state :disconnected do
-      event :connect, :transitions_to => :neutral
-    end
-
     state :neutral do
       event :recv_interested, :transitions_to => :wait_unchoke
       event :send_unchoke, :transitions_to => :wait_interest
@@ -87,7 +84,7 @@ class PeerRespondStateMachine
     end
 
     on_transition do |from, to, triggering_event, *event_args|
-      @logger.debug "#{triggering_event}: #{from} -> #{to}"
+      @logger.debug "#{@ip}:#{@port} RST: #{triggering_event}: #{from} -> #{to}"
     end
   end
 end 
