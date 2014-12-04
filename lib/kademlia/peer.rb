@@ -93,8 +93,16 @@ class Peer
     case msg
     when HaveMessage, BitfieldMessage
       @swarm.process_message(msg, self)
-      @respond_machine.recv_have_message!
-      @send_machine.recv_have_message!
+      @respond_machine.eval_unchoke!
+      @send_machine.recv_have!
+    when UnchokeMessage
+      @send_machine.recv_unchoke!
+    when ChokeMessage
+      @send_machine.recv_choke!
+    when InterestedMessage
+      @respond_machine.recv_interested!
+    when NotInterestedMessage
+      @respond_machine.recv_not_interested!
     else
       @logger.debug "#{@ip}:#{@port} Read dropping #{msg.class}"
     end
@@ -104,6 +112,10 @@ class Peer
     case msg
     when UnchokeMessage
       @respond_machine.send_unchoke!
+    when InterestedMessage
+      @send_machine.send_interested!
+    when NotInterestedMessage
+      @send_machine.send_not_interested!
     else
       @logger.debug "#{@ip}:#{@port} Write dropping #{msg.class}"
     end
@@ -120,7 +132,8 @@ class Peer
   end
 
   def stop_msg_processing_thread
-    @logger.debug Thread.kill(@msg_proc_thread)
+    @logger.debug "#{@ip}:#{@port} Stopping the message processing thread"
+    Thread.kill(@msg_proc_thread)
   end
 
   def start_read_thread
@@ -136,6 +149,7 @@ class Peer
   end
 
   def stop_read_thread
+    @logger.debug "#{@ip}:#{@port} Stopping the read thread"
     Thread.kill(@read_thread)
   end
 
@@ -147,13 +161,13 @@ class Peer
 	msg = @msg_send_queue.pop
 	@logger.debug "#{@ip}:#{@port} Writing #{msg.class}"
 	@socket.write(msg)
-
 	process_write_msg(msg)
       end
     end
   end
 
   def stop_write_thread
+    @logger.debug "#{@ip}:#{@port} Stopping the write thread"
     Thread.kill(@write_thread)
   end
 
@@ -166,6 +180,10 @@ class Peer
 
   def is_interesting?
     @swarm.interesting_peers.include?(self)
+  end
+
+  def should_unchoke?
+    is_interesting?
   end
 
 private

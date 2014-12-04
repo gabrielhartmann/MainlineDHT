@@ -41,13 +41,13 @@ class PeerRespondStateMachine
     state :neutral do
       event :recv_interested, :transitions_to => :wait_unchoke
       event :send_unchoke, :transitions_to => :wait_interest
-      event :recv_have_message, :transitions_to => :neutral
+      event :eval_unchoke, :transitions_to => :neutral
 
       on_entry do
         raise InvalidStateInvariant, "Am choking must be true." unless am_choking?
         raise InvalidStateInvariant, "Peer interested must be false." if peer_interested?
 
-	if (@peer.is_interesting?)
+	if (@peer.should_unchoke?)
 	  @peer.write(UnchokeMessage.new)
 	end
       end
@@ -56,30 +56,45 @@ class PeerRespondStateMachine
     state :wait_unchoke do
       event :recv_not_interested, :transitions_to => :neutral
       event :send_unchoke, :transitions_to => :respond
+      event :eval_unchoke, :transitions_to => :wait_unchoke
 
       on_entry do
         raise InvalidStateInvariant, "Am choking must be true." unless am_choking?
         raise InvalidStateInvariant, "Peer interested must be true." unless peer_interested?
+
+	if (@peer.should_unchoke?)
+	  @peer.write(UnchokeMessage.new)
+	end
       end
     end
 
     state :respond do
       event :send_choke, :transitions_to => :wait_unchoke
       event :recv_not_interested, :transitions_to => :wait_interest
+      event :eval_unchoke, :transitions_to => :respond
 
       on_entry do
 	raise InvalidStateInvariant, "Am choking must be false." if am_choking?
 	raise InvalidStateInvariant, "Peer interested must be true." unless peer_interested?
+
+	unless (@peer.should_unchoke?)
+	  @peer.write(ChokeMessage.new)
+	end
       end
     end
 
     state :wait_interest do
       event :recv_interested, :transitions_to => :respond
       event :send_choke, :transitions_to => :neutral
+      event :eval_unchoke, :transitions_to => :wait_interest
 
       on_entry do
 	raise InvalidStateInvariant, "Am choking must be false." if am_choking?
 	raise InvalidStateInvariant, "Peer interested must be false." if peer_interested?
+
+	unless (@peer.should_unchoke?)
+	  @peer.write(ChokeMessage.new)
+	end
       end
     end
 
