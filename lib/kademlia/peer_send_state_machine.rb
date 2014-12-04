@@ -71,13 +71,21 @@ class PeerSendStateMachine
       event :recv_choke, :transitions_to => :wait_unchoke
       event :send_not_interested, :transitions_to => :wait_interest
       event :recv_have, :transitions_to => :send
+      event :recv_piece, :transitions_to => :send
 
       on_entry do
-        raise InvalidStateInvariant, "Am interested must be true." unless am_interested?
-        raise InvalidStateInvariant, "Peer choking must be false." if peer_choking?
+	raise InvalidStateInvariant, "Am interested must be true." unless am_interested?
+	raise InvalidStateInvariant, "Peer choking must be false." if peer_choking?
 
 	unless (@peer.is_interesting?)
 	  @peer.write(NotInterestedMessage.new)
+	end
+
+	msg = @peer.get_next_request
+	if (msg)
+	  @peer.write(msg) 
+	else
+	  @logger.warn "#{@ip}:#{@port} SST: In send state, but did not send a request message."
 	end
       end
     end
@@ -88,8 +96,8 @@ class PeerSendStateMachine
       event :recv_have, :transitions_to => :wait_interest
 
       on_entry do
-        raise InvalidStateInvariant, "Am interested must be false." if am_interested?
-        raise InvalidStateInvariant, "Peer choking must be false." if peer_choking?
+	raise InvalidStateInvariant, "Am interested must be false." if am_interested?
+	raise InvalidStateInvariant, "Peer choking must be false." if peer_choking?
 
 	if (@peer.is_interesting?)
 	  @peer.write(InterestedMessage.new)

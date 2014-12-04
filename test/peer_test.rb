@@ -77,7 +77,7 @@ describe Peer do
     p.read_thread.alive?.must_equal true
     p.write_thread.alive?.must_equal true
 
-    sleep(3)
+    sleep(5)
     p.disconnect
 
     p.msg_proc_thread.stop?.must_equal true 

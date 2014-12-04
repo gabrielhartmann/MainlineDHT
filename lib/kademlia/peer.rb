@@ -103,9 +103,15 @@ class Peer
       @respond_machine.recv_interested!
     when NotInterestedMessage
       @respond_machine.recv_not_interested!
+    when PieceMessage
+      @swarm.process_message(msg, self)
+      @send_machine.recv_piece!
     else
       @logger.debug "#{@ip}:#{@port} Read dropping #{msg.class}"
+      return
     end
+
+    @logger.debug "#{@ip}:#{@port} Read processed #{msg.class}"
   end
 
   def process_write_msg(msg)
@@ -175,7 +181,12 @@ class Peer
     candidate_blocks = @swarm.block_directory.incomplete_blocks(self)
     candidate_blocks = candidate_blocks.first(sample_size)
     block = candidate_blocks.sample
-    return block.to_wire
+
+    if (block)
+      return block.to_wire
+    else
+      return nil
+    end
   end
 
   def is_interesting?
