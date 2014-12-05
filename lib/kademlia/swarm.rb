@@ -17,7 +17,7 @@ class Swarm
     @metainfo = Metainfo.new(torrent_file)
     @torrent_file_io = TorrentFileIO.new(@metainfo, torrent_file + ".part")
     @tracker = Tracker.new(@metainfo, @peer_id)
-    @block_directory = BlockDirectory.new(@metainfo, @torrent_file_io)
+    @block_directory = BlockDirectory.new(@logger, @metainfo, @torrent_file_io)
     @peers = decode_peers(@tracker.peers)
   end
 
@@ -31,11 +31,19 @@ class Swarm
       (0..bitfield.length-1).each do |index|
 	@block_directory.add_peer_to_piece(index, peer) if bitfield[index] == "1"
       end
+    when RequestMessage
+      return @torrent_file_io.read(message)
     when PieceMessage
       @torrent_file_io.write(message)
       @block_directory.finish_block(message)
     else
       raise SwarmError, "Cannot process unsupported message: #{message.inspect}" 
+    end
+  end
+
+  def broadcast(message)
+    @peers.each do |peer|
+      peer.write(message)
     end
   end
 

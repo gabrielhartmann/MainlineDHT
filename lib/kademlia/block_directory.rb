@@ -7,12 +7,14 @@ class BlockDirectory
 
   @@block_directory_bitfield_suffix = ".bitfield"
 
-  def initialize(metainfo, torrent_file_io, auto_refresh = true)
+  def initialize(logger, metainfo, torrent_file_io, auto_refresh = true, swarm = nil)
+    @logger = logger
     @metainfo = metainfo
     @torrent_file_io = torrent_file_io
     @pieces = initialize_pieces 
     @blocks = all_blocks
     @bitfield_file_name = @torrent_file_io.file_name + @@block_directory_bitfield_suffix 
+    @swarm = swarm
 
     # This creates an @bitfield member which is a BitfieldMessage
     # It is updated when Pieces are completed
@@ -42,7 +44,7 @@ class BlockDirectory
     if (File.exists?(@bitfield_file_name))
       read_bitfield
     else
-      puts "#{@bitfield_file_name} doesn't exist."
+      @logger.info "Bitfield file #{@bitfield_file_name} doesn't exist."
       piece_array_length = @metainfo.info.pieces.length
       threads = Array.new
 
@@ -169,12 +171,17 @@ class BlockDirectory
     if (@pieces[piece_index].complete?)
       # Block hashes properly
       if (piece_finished?(piece_index))
-	write_bitfield
+	complete_piece(piece_index)
       else
-	puts "Error: Piece was supposed to be complete, but did not hash correctly."
+	@logger.warn "Error: Piece #{piece_index} was supposed to be complete, but did not hash correctly."
 	clear_piece_blocks(piece_index)
       end
     end
+  end
+
+  def complete_piece(index)
+    write_bitfield
+    swarm.broadcast(HaveMessage.Create(index)) if swarm
   end
 
   def add_peer_to_piece(index, peer)

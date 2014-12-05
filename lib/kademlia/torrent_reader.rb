@@ -12,8 +12,7 @@ class TorrentReader
 
   def read(idx, bgn, length)
     file_offset = get_file_offset(@metainfo, idx, bgn)
-    raw_read = IO.read(@file_name, length, file_offset)
-    raw_message = [7, idx, bgn, raw_read.bytes].flatten.pack("CL>L>C*")
-    PeerMessage.Create(raw_message.length, raw_message)
+    block = IO.read(@file_name, length, file_offset)
+    PieceMessage.Create(idx, bgn, block)
   end
 end

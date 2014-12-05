@@ -44,6 +44,10 @@ class Peer
     "ip: #{@ip} port: #{@port} id: #{@id} hashed_info: #{@hashed_info} local_peer_id: #{@local_peer_id} handshake_response: #{@handshake_response}"
   end
 
+  def address
+    "#{@ip}:#{@port}"
+  end
+
   def supports_dht?
     raise InvalidPeerError, "Cannot determine DHT support without a hand shake." unless @handshake_response
     (@handshake_response.reserved & @@dht_bitmask) != 0
@@ -103,15 +107,17 @@ class Peer
       @respond_machine.recv_interested!
     when NotInterestedMessage
       @respond_machine.recv_not_interested!
+    when RequestMessage
+      write(@swarm.process_msg(msg, self))
     when PieceMessage
       @swarm.process_message(msg, self)
       @send_machine.recv_piece!
     else
-      @logger.debug "#{@ip}:#{@port} Read dropping #{msg.class}"
+      @logger.debug "#{address} Read dropping #{msg.class}"
       return
     end
 
-    @logger.debug "#{@ip}:#{@port} Read processed #{msg.class}"
+    @logger.debug "#{address} Read processed #{msg.class}"
   end
 
   def process_write_msg(msg)
@@ -123,12 +129,12 @@ class Peer
     when NotInterestedMessage
       @send_machine.send_not_interested!
     else
-      @logger.debug "#{@ip}:#{@port} Write dropping #{msg.class}"
+      @logger.debug "#{address} Write dropping #{msg.class}"
     end
   end
 
   def start_msg_processing_thread
-    @logger.debug "#{@ip}:#{@port} Starting the message processing thread"
+    @logger.debug "#{address} Starting the message processing thread"
 
     @msg_proc_thread = Thread.new do
       loop do
@@ -138,34 +144,34 @@ class Peer
   end
 
   def stop_msg_processing_thread
-    @logger.debug "#{@ip}:#{@port} Stopping the message processing thread"
+    @logger.debug "#{address} Stopping the message processing thread"
     Thread.kill(@msg_proc_thread)
   end
 
   def start_read_thread
-    @logger.debug "#{@ip}:#{@port} Starting the read thread"
+    @logger.debug "#{address} Starting the read thread"
 
     @read_thread = Thread.new do
       loop do
 	msg = read_next_message
-	@logger.debug "#{@ip}:#{@port} Received #{msg.class}"
+	@logger.debug "#{address} Received #{msg.class}"
 	@msg_recv_queue.push(msg)
       end
     end
   end
 
   def stop_read_thread
-    @logger.debug "#{@ip}:#{@port} Stopping the read thread"
+    @logger.debug "#{address} Stopping the read thread"
     Thread.kill(@read_thread)
   end
 
   def start_write_thread
-    @logger.debug "#{@ip}:#{@port} Starting the write thread"
+    @logger.debug "#{address} Starting the write thread"
 
     @write_thread = Thread.new do
       loop do
 	msg = @msg_send_queue.pop
-	@logger.debug "#{@ip}:#{@port} Writing #{msg.class}"
+	@logger.debug "#{address} Writing #{msg.class}"
 	@socket.write(msg)
 	process_write_msg(msg)
       end
@@ -173,7 +179,7 @@ class Peer
   end
 
   def stop_write_thread
-    @logger.debug "#{@ip}:#{@port} Stopping the write thread"
+    @logger.debug "#{address} Stopping the write thread"
     Thread.kill(@write_thread)
   end
 
