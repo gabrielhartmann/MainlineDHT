@@ -10,6 +10,7 @@ class Tracker
   attr_reader :hashed_info
   attr_reader :peers
   attr_reader :peer_id
+  attr_reader :interval
 
   def initialize(logger, metainfo, peer_id = nil)
     @logger = logger
@@ -28,7 +29,7 @@ class Tracker
     @compact = 1
     @support_crypto = 0
     @event = "started"
-    @peers = announce_request.peers
+    announce_request
   end
   
   def announce_request(event = @event, uploaded = @uploaded, downloaded = @downloaded, left = @left)
@@ -37,7 +38,10 @@ class Tracker
 
     uri = URI(announce_url)
     response = Net::HTTP.get(uri)
-    return AnnounceResponse.new(response, @hashed_info, @peer_id)
+    announce_response = AnnounceResponse.new(response, @hashed_info, @peer_id)
+    @peers = announce_response.peers
+    @interval = announce_response.interval
+    return announce_response
   end
 
 private
