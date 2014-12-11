@@ -1,5 +1,6 @@
 require 'socket'
 require_relative 'handshake_response'
+require_relative 'peer_protocol_errors'
 
 class PeerSocket
   def initialize(peer)
@@ -15,17 +16,22 @@ class PeerSocket
   end
 
   def shake_hands
-    @socket = TCPSocket.open(@peer.ip, @peer.port)
-    @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
-    @socket.send("#{@peer.hashed_info}#{@peer.local_peer_id}", 0)
+    begin
+      @socket = TCPSocket.open(@peer.ip, @peer.port)
+      @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
+      @socket.send("#{@peer.hashed_info}#{@peer.local_peer_id}", 0)
 
-    length = @socket.read(1)[0]
-    protocol = @socket.read(19)
-    reserved = @socket.read(8)
-    info_hash = @socket.read(20)
-    peer_id = @socket.read(20)
+      length = @socket.read(1)[0]
+      protocol = @socket.read(19)
+      reserved = @socket.read(8)
+      info_hash = @socket.read(20)
+      peer_id = @socket.read(20)
 
-    HandShakeResponse.new(length, protocol, reserved, info_hash, peer_id)
+      HandShakeResponse.new(length, protocol, reserved, info_hash, peer_id)
+
+    rescue Exception => e
+      raise PeerProtocolError, "Failed to shake hands with exception: #{e}"
+    end
   end
 
   def read

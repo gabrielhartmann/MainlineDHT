@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require_relative '../lib/kademlia/messages'
 
 describe PeerMessage do
 
@@ -38,6 +39,16 @@ describe PeerMessage do
     payload = PeerMessage.id_to_wire(5) + [3].pack("C")
     message = PeerMessage.Create(2, payload)
     message.class.must_equal BitfieldMessage
+  end
+
+  it "can create a bitfield message using its Create method" do
+    # simulating a payload for the bitfield of 0b00000011
+    payload = PeerMessage.id_to_wire(5) + [3].pack("C")
+    peer_message = PeerMessage.Create(2, payload)
+
+    bit_message = BitfieldMessage.Create("00000011")
+
+    peer_message.to_s.must_equal(bit_message.to_s)
   end
 
   it "can create a request message" do

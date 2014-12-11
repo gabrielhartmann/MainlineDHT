@@ -15,10 +15,30 @@ class Swarm
     @logger.level = log_level
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
-    @torrent_file_io = TorrentFileIO.new(@metainfo, torrent_file + ".part")
+    @torrent_file_io = TorrentFileIO.new(@logger, @metainfo, torrent_file + ".part")
     @tracker = Tracker.new(@metainfo, @peer_id)
     @block_directory = BlockDirectory.new(@logger, @metainfo, @torrent_file_io)
     @peers = decode_peers(@tracker.peers)
+  end
+
+  def start(peer_count = @peers.length)
+    @logger.info "Connecting to #{peer_count} peers"
+    @started_peers = Array.new
+    @peers.first(peer_count).each do |peer|
+      begin
+	peer.join(self)
+	peer.connect
+	@started_peers << peer
+      rescue
+	@logger.info "Failed to connect to #{peer}" 
+      end
+    end
+  end
+
+  def stop
+    @started_peers.each do |peer|
+      peer.disconnect
+    end
   end
 
   def process_message(message, peer)
@@ -70,6 +90,7 @@ class Swarm
       index += 6
     end
 
+    @logger.info "#{peers.length} peers decoded"
     return peers
   end
 end

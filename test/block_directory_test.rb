@@ -15,7 +15,7 @@ describe BlockDirectory do
 
   it "can determine the complete pieces of a partial file" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name + ".part")
+    io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name + ".part")
     block_dir = BlockDirectory.new(Logger.default, metainfo, io)
     
     pieces = block_dir.refresh_pieces
@@ -24,7 +24,7 @@ describe BlockDirectory do
 
   it "can determine the incomplete pieces of a partial file" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name + ".part")
+    io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name + ".part")
     block_dir = BlockDirectory.new(Logger.default, metainfo, io)
 
     pieces = block_dir.refresh_pieces
@@ -33,7 +33,7 @@ describe BlockDirectory do
 
   it "can determine the complete pieces of a complete file" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name)
+    io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name)
     block_dir = BlockDirectory.new(Logger.default, metainfo, io)
     
     pieces = block_dir.refresh_pieces
@@ -42,7 +42,7 @@ describe BlockDirectory do
 
   it "can determine the incomplete pieces of a complete file" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name)
+    io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/" + metainfo.info.name)
     block_dir = BlockDirectory.new(Logger.default, metainfo, io)
 
     pieces = block_dir.refresh_pieces
@@ -82,7 +82,7 @@ describe BlockDirectory do
   end
 
   it "can determine available and unavailable pieces before and after a peer is added" do
-    block_dir = BlockDirectory.new(Logger.default, Metainfo.default, TorrentFileIO.new(Metainfo.default), false)
+    block_dir = BlockDirectory.new(Logger.default, Metainfo.default, TorrentFileIO.new(Logger.default, Metainfo.default), false)
 
     unavailable_piece_count = block_dir.incomplete_pieces.length
     available_piece_count = block_dir.completed_pieces.length

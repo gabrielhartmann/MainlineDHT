@@ -40,6 +40,7 @@ describe Peer do
 
   it "must be able to generate appropriate request messages" do
     s = Swarm.new(Metainfo.default_file)
+    s.block_directory.clear
     p = Peer.default
     p.join(s)
 
@@ -54,7 +55,7 @@ describe Peer do
   it "must be able to determine whether it is interesting" do
     s = Swarm.default
     p = Peer.default
-    piece_index = 0
+    piece_index = 100
     p.join(s)
 
     p.is_interesting?.must_equal false

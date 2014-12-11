@@ -5,10 +5,12 @@ class TorrentFileIO
   attr_reader :file_name
   attr_reader :metainfo
 
-  def initialize(metainfo, file_name = nil)
+  def initialize(logger, metainfo, file_name = nil)
+    @logger = logger
     @metainfo = metainfo
     file_name = metainfo.info.name unless file_name
     @file_name = file_name
+    @logger.info "Torrent file io opening #{@file_name}"
     initialize_file
 
     @writer = TorrentWriter.new(metainfo, @file_name)
@@ -26,7 +28,7 @@ class TorrentFileIO
   private
 
   def initialize_file
-    unless (File.exists?(@file_name))
+    unless (File.exist?(@file_name))
       size = @metainfo.info.length
       File.open(@file_name,"wb") { |f| f.seek(size-1); f.write("\0"); f.close}
     end

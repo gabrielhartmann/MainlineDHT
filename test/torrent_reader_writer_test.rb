@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require_relative 'logger_test_helper'
 require_relative 'metainfo_test_helper'
 require_relative '../lib/kademlia/torrent_file_io'
 require_relative '../lib/kademlia/messages'
@@ -10,7 +11,7 @@ describe TorrentFileIO do
 
     metainfo = Metainfo.default
     file_name = "test_file_read_write"
-    torrent_file_io = TorrentFileIO.new(metainfo, file_name)
+    torrent_file_io = TorrentFileIO.new(Logger.default, metainfo, file_name)
 
     length = torrent_file_io.write(piece_msg_in)
     piece_msg_out = torrent_file_io.read(piece_msg_in.index, piece_msg_in.begin, length)
@@ -27,7 +28,7 @@ describe TorrentFileIO do
 
   it "can determine whether pieces are complete" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    torrent_file_io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/tc08.mp3")
+    torrent_file_io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/tc08.mp3")
 
     i = 0
     metainfo.info.pieces.each do |piece_from_metainfo|
@@ -41,7 +42,7 @@ describe TorrentFileIO do
 
   it "can determine whether pieces are complete" do
     metainfo = Metainfo.new(File.dirname(__FILE__) + '/tc08.mp3.torrent')
-    torrent_file_io = TorrentFileIO.new(metainfo, File.dirname(__FILE__) + "/tc08.mp3.part")
+    torrent_file_io = TorrentFileIO.new(Logger.default, metainfo, File.dirname(__FILE__) + "/tc08.mp3.part")
 
     i = 0
     failed_matches = 0
@@ -65,7 +66,7 @@ describe TorrentFileIO do
 
     begin
       metainfo = Metainfo.default
-      torrent_file_io = TorrentFileIO.new(metainfo, file_name)
+      torrent_file_io = TorrentFileIO.new(Logger.default, metainfo, file_name)
 
       File.exists?(file_name).must_equal true
       File.size?(file_name).must_equal metainfo.info.length

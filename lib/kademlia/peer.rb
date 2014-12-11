@@ -21,7 +21,7 @@ class Peer
   attr_reader :write_thread
 
   @@dht_bitmask = 0x0000000000000001
-  @@request_sample_size = 10
+  @@request_sample_size = 1
 
   def initialize(logger, ip, port, hashed_info, local_peer_id, id = generate_id)
     raise InvalidPeerError, "The hashed info cannot be null" unless hashed_info
@@ -68,6 +68,7 @@ class Peer
 
   def write(message)
     @msg_send_queue.push(message)
+    @logger.debug "#{address} Write queue size: #{@msg_send_queue.length}"
   end
 
   def join(swarm)
@@ -170,10 +171,15 @@ class Peer
 
     @write_thread = Thread.new do
       loop do
-	msg = @msg_send_queue.pop
-	@logger.debug "#{address} Writing #{msg.class}"
-	@socket.write(msg)
-	process_write_msg(msg)
+	begin
+	  msg = @msg_send_queue.pop
+	  @logger.debug "#{address} Writing #{msg.class}"
+	  @socket.write(msg)
+	  process_write_msg(msg)
+	rescue Exception => e
+	  @logger.debug "#{address} Write thread caught exception #{e}"
+	  raise
+	end
       end
     end
   end
@@ -184,9 +190,18 @@ class Peer
   end
 
   def get_next_request(sample_size = @@request_sample_size)
-    candidate_blocks = @swarm.block_directory.incomplete_blocks(self)
-    candidate_blocks = candidate_blocks.first(sample_size)
-    block = candidate_blocks.sample
+    # Get a random piece from among a sample size of the pieces with the
+    # fewest peers.  We don't want to hammer the peer with the rarest piece
+    # necessarily.  So we choose a block from among a few of the least
+    # available pieces.
+    candidate_pieces = @swarm.block_directory.incomplete_pieces(self)
+    return nil unless candidate_pieces.length > 0
+
+    candidate_pieces.sort_by! { |p| p.peers.length }
+    candidate_pieces = candidate_pieces.take(sample_size)
+    piece = candidate_pieces.sample
+    block = piece.incomplete_blocks.sample 
+    @logger.debug "Next request block: #{block}"
 
     if (block)
       return block.to_wire

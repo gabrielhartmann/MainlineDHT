@@ -14,6 +14,7 @@ class BlockDirectory
     @pieces = initialize_pieces 
     @blocks = all_blocks
     @bitfield_file_name = @torrent_file_io.file_name + @@block_directory_bitfield_suffix 
+    @logger.info "Bitfield file name: #{@bitfield_file_name}"
     @swarm = swarm
 
     # This creates an @bitfield member which is a BitfieldMessage
@@ -41,12 +42,10 @@ class BlockDirectory
   end
 
   def refresh_pieces
-    if (File.exists?(@bitfield_file_name))
+    if (File.exist?(@bitfield_file_name))
       read_bitfield
     else
       @logger.info "Bitfield file #{@bitfield_file_name} doesn't exist."
-      piece_array_length = @metainfo.info.pieces.length
-      threads = Array.new
 
       @pieces.each do |piece|
 	print "#{piece.index.to_f/pieces.length * 100.0} "
@@ -81,12 +80,15 @@ class BlockDirectory
   end
 
   def read_bitfield
+    @logger.info "Reading bitfield to file: #{@bitfield_file_name}"
     @bitfield = Marshal.load(File.read(@bitfield_file_name)) 
     decoded_bitfield = @bitfield.payload.unpack("B*").first
 
     @pieces.each do |piece|
       piece.finish if decoded_bitfield[piece.index] == "1"
     end
+
+    return decoded_bitfield
   end
 
   def write_bitfield
@@ -100,7 +102,8 @@ class BlockDirectory
       end
     end
 
-    File.delete(@bitfield_file_name) if File.exists(@bitfield_file_name)
+    @logger.info "Writing bitfield to file: #{@bitfield_file_name}"
+    File.delete(@bitfield_file_name) if File.exist?(@bitfield_file_name)
     @bitfield = BitfieldMessage.Create(bitfield_string)
     File.open(@bitfield_file_name, 'w') { |f| f.write(Marshal.dump(@bitfield)); f.close }
   end
@@ -146,11 +149,11 @@ class BlockDirectory
   end
 
   def incomplete_blocks(peer = nil)
-    blocks = all_blocks(peer).select { |b| !b.complete? }
+    all_blocks(peer).select { |b| !b.complete? }
   end
   
   def completed_blocks(peer = nil)
-    blocks = all_blocks(peer).select { |b| b.complete? }
+    all_blocks(peer).select { |b| b.complete? }
   end
 
   # Pieces which can be downloaded
@@ -221,6 +224,10 @@ class Piece
     @length = length
     @peers = Array.new
     @blocks = initialize_blocks
+  end
+
+  def to_s
+    "index: #{@index} length: #{@length} peers: #{@peers.length} complete: #{complete?}"
   end
 
   def finish 
@@ -297,6 +304,10 @@ class Block
     @offset = offset
     @length = length
     @complete = complete
+  end
+
+  def to_s
+    "index: #{@index} offset: #{@offset} length: #{@length} complete: #{@complete}"
   end
 
   def ==(another_block)
