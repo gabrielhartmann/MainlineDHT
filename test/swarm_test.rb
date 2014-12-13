@@ -59,6 +59,13 @@ describe Swarm do
     s.interesting_peers.length.must_equal 1
   end
 
+  it "can determine how much has been downloaded" do
+    s = Swarm.default
+    (s.downloaded == 0).must_equal false
+    s.block_directory.clear
+    (s.downloaded == 0).must_equal true
+  end
+
   it "can download a piece" do
     s = Swarm.default
     completed_piece_count = s.block_directory.completed_pieces.length

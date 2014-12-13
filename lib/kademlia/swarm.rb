@@ -19,26 +19,53 @@ class Swarm
     @tracker = Tracker.new(@logger, @metainfo, @peer_id)
     @block_directory = BlockDirectory.new(@logger, @metainfo, @torrent_file_io)
     @peers = decode_peers(@tracker.peers)
+    @started_peers = Array.new
+    @peer_semaphore = Mutex.new
   end
 
-  def start(peer_count = @peers.length)
-    @logger.info "Connecting to #{peer_count} peers"
-    @started_peers = Array.new
-    @peers.first(peer_count).each do |peer|
-      begin
-	peer.join(self)
-	peer.connect
-	@started_peers << peer
-      rescue
-	@logger.info "Failed to connect to #{peer}" 
+  def start(peers = @peers)
+    @logger.info "Connecting to #{peers.length} peers"
+
+    peer_threads = Array.new
+
+    @peers.each do |peer|
+      peer_threads << Thread.new do
+	unless @started_peers.include? peer
+	  begin
+	    peer.join(self)
+	    peer.connect
+	    @peer_semaphore.synchronize do
+	      @started_peers << peer
+	    end
+	  rescue
+	    @logger.info "Failed to connect to #{peer}" 
+	  end
+	end
       end
     end
+
+    peer_threads.each { |t| t.join }
+
+    @logger.info "Connected to #{@started_peers.length} peers"
   end
 
   def stop
+    @logger.info "Disconnecting from #{@started_peers.length} peers"
+
+    peer_threads = Array.new
     @started_peers.each do |peer|
-      peer.disconnect
+      @logger.info "Disconnecting from #{peer}"
+      peer_threads << Thread.new do
+	peer.disconnect
+      end
     end
+
+    peer_threads.each do |t|
+      t.join
+    end
+
+    @logger.info "Disconnected from #{@started_peers.length} peers"
+    @started_peers = Array.new
   end
 
   def process_message(message, peer)
@@ -78,6 +105,12 @@ class Swarm
     return int_peers
   end
 
+  def downloaded
+    downloaded = 0
+    @block_directory.completed_blocks.each { |block| downloaded += block.length }
+    return downloaded
+  end
+
   private
 
   def decode_peers(encoded_peers)
@@ -93,4 +126,5 @@ class Swarm
     @logger.info "#{peers.length} peers decoded"
     return peers
   end
+
 end

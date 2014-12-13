@@ -77,6 +77,7 @@ class Peer
 
   def connect
     raise InvalidPeerState, "Cannot connect a peer without a Swarm." unless @swarm
+    @logger.debug "#{address} Connecting"
     shake_hands
     write(@swarm.block_directory.bitfield)
     @respond_machine = PeerRespondStateMachine.new(self)
@@ -84,14 +85,17 @@ class Peer
     start_msg_processing_thread
     start_read_thread
     start_write_thread
+    @logger.debug "#{address} Connected"
   end
 
   def disconnect
+    @logger.debug "#{address} Disconnecting"
     stop_read_thread
     stop_msg_processing_thread
     stop_write_thread
     @msg_recv_queue = Queue.new
     @msg_send_queue = Queue.new
+    @logger.debug "#{address} Disconnected"
   end
 
   def process_read_msg(msg)
@@ -146,7 +150,7 @@ class Peer
 
   def stop_msg_processing_thread
     @logger.debug "#{address} Stopping the message processing thread"
-    Thread.kill(@msg_proc_thread)
+    Thread.kill(@msg_proc_thread) if @msg_proc_thread
   end
 
   def start_read_thread
@@ -163,7 +167,7 @@ class Peer
 
   def stop_read_thread
     @logger.debug "#{address} Stopping the read thread"
-    Thread.kill(@read_thread)
+    Thread.kill(@read_thread) if @read_thread
   end
 
   def start_write_thread
@@ -186,7 +190,7 @@ class Peer
 
   def stop_write_thread
     @logger.debug "#{address} Stopping the write thread"
-    Thread.kill(@write_thread)
+    Thread.kill(@write_thread) if @write_thread
   end
 
   def get_next_request(sample_size = @@request_sample_size)
@@ -201,7 +205,7 @@ class Peer
     candidate_pieces = candidate_pieces.take(sample_size)
     piece = candidate_pieces.sample
     block = piece.incomplete_blocks.sample 
-    @logger.debug "Next request block: #{block}"
+    @logger.debug "#{address} Next request block: #{block}"
 
     if (block)
       return block.to_wire
