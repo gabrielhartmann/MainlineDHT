@@ -1,5 +1,6 @@
 require 'socket'
 require_relative 'handshake_response'
+require_relative 'messages'
 require_relative 'peer_protocol_errors'
 
 class PeerSocket
@@ -18,8 +19,9 @@ class PeerSocket
   def shake_hands
     begin
       @socket = TCPSocket.open(@peer.ip, @peer.port)
-      @socket.send("\023BitTorrent protocol\0\0\0\0\0\0\0\0", 0);
-      @socket.send("#{@peer.hashed_info}#{@peer.local_peer_id}", 0)
+      reserved = "\0\0\0\0\0\0\0\1"
+      handshake_request = HandshakeMessage.new(reserved, @peer.hashed_info, @peer.local_peer_id)
+      write(handshake_request)
 
       length = @socket.read(1)[0]
       protocol = @socket.read(19)

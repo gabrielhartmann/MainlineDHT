@@ -82,7 +82,7 @@ describe PeerMessage do
   end
 
   it "can create a port message" do
-    payload = PeerMessage.id_to_wire(9) + [6881].pack("s>")
+    payload = PeerMessage.id_to_wire(9) + [6881].pack("S>")
     message = PeerMessage.Create(3, payload)
     message.class.must_equal PortMessage 
   end

@@ -77,4 +77,29 @@ describe Swarm do
 
     s.stop
   end
+
+  it "can find peers which support DHT" do
+    dht_peer = nil
+    s = Swarm.default
+
+    s.peers.each do |peer|
+      peer.join(s)
+      peer.connect
+      if peer.supports_dht?
+	dht_peer = peer
+	puts "#{dht_peer} supports dht"
+	break
+      end
+    end
+
+    node_socket = dht_peer.start_dht
+
+    puts node_socket.inspect
+    puts node_socket.address
+
+    sleep(5)
+
+    packet = node_socket.read
+    puts packet.inspect
+  end
 end

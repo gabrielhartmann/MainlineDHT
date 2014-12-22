@@ -1,5 +1,21 @@
 require_relative 'message_errors'
 
+class HandshakeMessage
+  @@protocol_name = "BitTorrent protocol"
+
+  def initialize(reserved, hashed_info, peer_id)
+    @reserved = reserved
+    @hashed_info = hashed_info
+    @peer_id = peer_id
+  end
+
+  def to_wire
+    protocol_length = [@@protocol_name.length].pack("C")
+    msg = protocol_length + @@protocol_name + @reserved + @hashed_info + @peer_id
+    return msg
+  end
+end
+
 class PeerMessage
   attr_reader :length
   attr_reader :id
@@ -210,6 +226,11 @@ end
 
 class PortMessage < PayloadMessage
   def initialize(payload)
+    raise MessageError, "Payload length must be 2 for a PortMessage, not #{payload.length}" if payload.length != 2
     super(3, 9, payload)
+  end
+
+  def self.create(port)
+    return PortMessage.new([port].pack("S>"))
   end
 end

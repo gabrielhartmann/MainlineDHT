@@ -26,10 +26,24 @@ class QueryMessage < KrpcMessage
   end
 end
 
+class ResponseMessage < KrpcMessage
+  def initialize(transaction_id)
+    super(transaction_id)
+    @hash["y"] = "r"
+  end
+end
+
 class PingQueryMessage < QueryMessage
   def initialize(node_id)
     super(generate_id)
     @hash["q"] = "ping"
     @hash["a"] = {"id" => node_id.to_s}
+  end
+end
+
+class PingResponseMessage < ResponseMessage
+  def initialize(node_id)
+    super(generate_id)
+    @hash["r"] = {"id" => node_id.to_s}
   end
 end

@@ -55,13 +55,7 @@ class Swarm
     peer_threads = Array.new
     @started_peers.each do |peer|
       @logger.info "Disconnecting from #{peer}"
-      peer_threads << Thread.new do
-	peer.disconnect
-      end
-    end
-
-    peer_threads.each do |t|
-      t.join
+      peer.disconnect
     end
 
     @logger.info "Disconnected from #{@started_peers.length} peers"

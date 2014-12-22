@@ -2,6 +2,7 @@ require_relative 'peer_errors'
 require_relative 'handshake_response'
 require_relative 'messages'
 require_relative 'peer_socket'
+require_relative 'node_socket'
 require_relative 'peer_respond_state_machine'
 require_relative 'peer_send_state_machine'
 
@@ -98,6 +99,17 @@ class Peer
     @logger.debug "#{address} Disconnected"
   end
 
+  def start_dht
+    @node_socket = NodeSocket.open
+    port = @node_socket.address[1]
+    puts "port = #{port}"
+    port_msg = PortMessage.create(port)
+    puts "payload = #{port_msg.payload.unpack("S>").first}"
+    puts port_msg.inspect
+    write(port_msg)
+    return @node_socket
+  end
+
   def process_read_msg(msg)
     case msg
     when HaveMessage, BitfieldMessage
@@ -117,6 +129,8 @@ class Peer
     when PieceMessage
       @swarm.process_message(msg, self)
       @send_machine.recv_piece!
+    when PortMessage
+      @logger.debug "#{address} PortMessage: #{msg.inspect}"
     else
       @logger.debug "#{address} Read dropping #{msg.class}"
       return
