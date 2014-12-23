@@ -7,6 +7,10 @@ class KrpcMessage
     @hash = Hash.new
     @hash["t"] = transaction_id
   end
+
+  def to_wire
+    bencode
+  end
   
   def bencode
     @hash.bencode

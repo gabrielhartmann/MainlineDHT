@@ -92,14 +92,8 @@ describe Swarm do
       end
     end
 
-    node_socket = dht_peer.start_dht
+    sleep(10)
 
-    puts node_socket.inspect
-    puts node_socket.address
-
-    sleep(5)
-
-    packet = node_socket.read
-    puts packet.inspect
+    raise StandardError, "test failed"
   end
 end

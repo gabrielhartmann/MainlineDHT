@@ -225,9 +225,12 @@ class CancelMessage < BlockMessage
 end
 
 class PortMessage < PayloadMessage
+  attr_reader :port
+
   def initialize(payload)
     raise MessageError, "Payload length must be 2 for a PortMessage, not #{payload.length}" if payload.length != 2
     super(3, 9, payload)
+    @port = payload.unpack("S>").first
   end
 
   def self.create(port)
