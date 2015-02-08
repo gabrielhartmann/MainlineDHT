@@ -74,16 +74,16 @@ describe Peer do
     p.join(s)
     p.connect
 
-    p.msg_proc_thread.alive?.must_equal true 
-    p.read_thread.alive?.must_equal true
-    p.write_thread.alive?.must_equal true
+    p.socket.msg_proc_thread.alive?.must_equal true 
+    p.socket.read_thread.alive?.must_equal true
+    p.socket.write_thread.alive?.must_equal true
 
     sleep(5)
     p.disconnect
 
-    p.msg_proc_thread.stop?.must_equal true 
-    p.read_thread.stop?.must_equal true 
-    p.write_thread.stop?.must_equal true 
+    p.socket.msg_proc_thread.stop?.must_equal true 
+    p.socket.read_thread.stop?.must_equal true 
+    p.socket.write_thread.stop?.must_equal true 
 
     s.block_directory.clear
   end
