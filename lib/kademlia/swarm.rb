@@ -29,8 +29,8 @@ class Swarm
 	peer.join(self)
 	peer.connect
 	@started_peers << peer
-      rescue
-	@logger.info "Failed to connect to #{peer}" 
+      rescue Exception => e
+	@logger.info "Failed to connect to #{peer} with exception: #{e}" 
       end
     end
   end
