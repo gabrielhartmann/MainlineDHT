@@ -85,8 +85,12 @@ class PeerSocket
   end
 
   def stop_msg_processing_thread
-    @logger.debug "#{address} Stopping the message processing thread"
-    Thread.kill(@msg_proc_thread)
+    if (@msg_proc_thread)
+      @logger.debug "#{address} Stopping the message processing thread"
+      Thread.kill(@msg_proc_thread)
+    else
+      @logger.debug "#{address} No message processing thread to stop"
+    end
   end
 
   def start_read_thread
@@ -102,8 +106,12 @@ class PeerSocket
   end
 
   def stop_read_thread
-    @logger.debug "#{address} Stopping the read thread"
-    Thread.kill(@read_thread)
+    if (@read_thread)
+      @logger.debug "#{address} Stopping the read thread"
+      Thread.kill(@read_thread)
+    else
+      @logger.debug "#{address} No read thread to stop"
+    end
   end
 
   def start_write_thread
@@ -125,7 +133,11 @@ class PeerSocket
   end
 
   def stop_write_thread
-    @logger.debug "#{address} Stopping the write thread"
-    Thread.kill(@write_thread)
+    if (@write_thread)
+      @logger.debug "#{address} Stopping the write thread"
+      Thread.kill(@write_thread)
+    else
+      @logger.debug "#{address} No write thread to stop"
+    end
   end
 end
