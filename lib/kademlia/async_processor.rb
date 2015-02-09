@@ -1,4 +1,6 @@
 class AsyncProcessor
+  attr_reader :queue
+
   def initialize (proc_func)
     @proc = proc_func
     @queue = Queue.new

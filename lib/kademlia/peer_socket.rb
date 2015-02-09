@@ -11,7 +11,6 @@ class PeerSocket
   def initialize(logger, peer)
     @logger = logger
     @peer = peer 
-    @msg_send_queue = Queue.new
   end
 
   def address
@@ -70,8 +69,8 @@ class PeerSocket
   end
 
   def write_async(message)
-    @msg_send_queue.push(message)
-    @logger.debug "#{address} Write queue size: #{@msg_send_queue.length}"
+    @msg_writer.enqueue(message)
+    @logger.debug "#{address} Write queue size: #{@msg_writer.queue.length}"
   end
 
   def start_msg_processing_thread
@@ -80,6 +79,7 @@ class PeerSocket
   end
 
   def stop_msg_processing_thread
+    @logger.debug "#{address} Stopping the message processing thread"
     @msg_processor = nil
   end
 
@@ -106,28 +106,11 @@ class PeerSocket
 
   def start_write_thread
     @logger.debug "#{address} Starting the write thread"
-
-    @write_thread = Thread.new do
-      loop do
-	begin
-	  msg = @msg_send_queue.pop
-	  @logger.debug "#{address} Writing #{msg.class}"
-	  write(msg)
-	  @peer.process_write_msg(msg)
-	rescue Exception => e
-	  @logger.debug "#{address} Write thread caught exception #{e}"
-	  raise
-	end
-      end
-    end
+    @msg_writer = AsyncProcessor.new(Proc.new {|msg| write(msg); @peer.process_write_msg(msg)});
   end
 
   def stop_write_thread
-    if (@write_thread)
-      @logger.debug "#{address} Stopping the write thread"
-      Thread.kill(@write_thread)
-    else
-      @logger.debug "#{address} No write thread to stop"
-    end
+    @logger.debug "#{address} Stopping the write thread"
+    @msg_writer = nil
   end
 end
