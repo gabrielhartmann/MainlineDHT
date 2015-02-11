@@ -21,6 +21,7 @@ describe AsyncProcessor do
     processor.enqueue(2)
     processor.enqueue(3)
     processor.enqueue(4)
+    processor.start
 
     Timeout::timeout(5) do
       loop do

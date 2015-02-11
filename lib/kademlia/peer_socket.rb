@@ -11,6 +11,8 @@ class PeerSocket
   def initialize(logger, peer)
     @logger = logger
     @peer = peer 
+    @msg_processor = AsyncProcessor.new(Proc.new {|msg| @peer.process_read_msg(msg)})
+    @msg_writer = AsyncProcessor.new(Proc.new {|msg| write(msg); @peer.process_write_msg(msg)});
   end
 
   def address
@@ -75,12 +77,12 @@ class PeerSocket
 
   def start_msg_processing_thread
     @logger.debug "#{address} Starting the message processing thread"
-    @msg_processor = AsyncProcessor.new(Proc.new {|msg| @peer.process_read_msg(msg)})
+    @msg_processor.start
   end
 
   def stop_msg_processing_thread
     @logger.debug "#{address} Stopping the message processing thread"
-    @msg_processor = nil
+    @msg_processor = AsyncProcessor.new(Proc.new {|msg| @peer.process_read_msg(msg)})
   end
 
   def start_read_thread
@@ -106,11 +108,11 @@ class PeerSocket
 
   def start_write_thread
     @logger.debug "#{address} Starting the write thread"
-    @msg_writer = AsyncProcessor.new(Proc.new {|msg| write(msg); @peer.process_write_msg(msg)});
+    @msg_writer.start
   end
 
   def stop_write_thread
     @logger.debug "#{address} Stopping the write thread"
-    @msg_writer = nil
+    @msg_writer = AsyncProcessor.new(Proc.new {|msg| write(msg); @peer.process_write_msg(msg)});
   end
 end
