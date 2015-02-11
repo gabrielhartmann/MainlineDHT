@@ -9,10 +9,12 @@ class Swarm
   attr_reader :metainfo
   attr_reader :peers
   attr_reader :block_directory
+  attr_reader :torrent_file
 
   def initialize(torrent_file, log_level = Logger::DEBUG)
     @logger = MonoLogger.new('swarm.log', 10, 1024000)
     @logger.level = log_level
+    @torrent_file = torrent_file
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
     @torrent_file_io = TorrentFileIO.new(@logger, @metainfo, torrent_file + ".part")

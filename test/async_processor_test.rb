@@ -17,10 +17,10 @@ describe AsyncProcessor do
   it "can enqueue work to be processed later" do
     effect = 0
     processor = AsyncProcessor.new(Proc.new {|arg| effect += arg })
-    processor.enqueue(1)
-    processor.enqueue(2)
-    processor.enqueue(3)
-    processor.enqueue(4)
+    processor.push(1)
+    processor.push(2)
+    processor.push(3)
+    processor.push(4)
     processor.start
 
     Timeout::timeout(5) do

@@ -10,7 +10,7 @@ class AsyncProcessor
     @proc.call(arg)
   end
 
-  def enqueue(arg)
+  def push(arg)
     @queue.push(arg)
   end
 

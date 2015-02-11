@@ -71,7 +71,7 @@ class PeerSocket
   end
 
   def write_async(message)
-    @msg_writer.enqueue(message)
+    @msg_writer.push(message)
     @logger.debug "#{address} Write queue size: #{@msg_writer.queue.length}"
   end
 
@@ -92,7 +92,7 @@ class PeerSocket
       loop do
 	msg = read
 	@logger.debug "#{address} Received #{msg.class}"
-	@msg_processor.enqueue(msg)
+	@msg_processor.push(msg)
       end
     end
   end
