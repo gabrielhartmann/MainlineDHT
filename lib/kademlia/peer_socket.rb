@@ -2,6 +2,7 @@ require 'socket'
 require_relative 'handshake_response'
 require_relative 'peer_protocol_errors'
 require_relative 'async_processor'
+require_relative 'async_producer'
 
 class PeerSocket
   attr_reader :msg_proc_thread
@@ -12,6 +13,7 @@ class PeerSocket
     @logger = logger
     @peer = peer 
     @msg_processor = AsyncProcessor.new(Proc.new {|msg| @peer.process_read_msg(msg)})
+    @msg_reader = AsyncProducer.new(Proc.new {read}, @msg_processor)
     @msg_writer = AsyncProcessor.new(Proc.new {|msg| write(msg); @peer.process_write_msg(msg)});
   end
 
@@ -87,23 +89,12 @@ class PeerSocket
 
   def start_read_thread
     @logger.debug "#{address} Starting the read thread"
-
-    @read_thread = Thread.new do
-      loop do
-	msg = read
-	@logger.debug "#{address} Received #{msg.class}"
-	@msg_processor.push(msg)
-      end
-    end
+    @msg_reader.start
   end
 
   def stop_read_thread
-    if (@read_thread)
-      @logger.debug "#{address} Stopping the read thread"
-      Thread.kill(@read_thread)
-    else
-      @logger.debug "#{address} No read thread to stop"
-    end
+    @logger.debug "#{address} Stopping the read thread"
+    @msg_reader = AsyncProducer.new(Proc.new {read}, @msg_processor)
   end
 
   def start_write_thread

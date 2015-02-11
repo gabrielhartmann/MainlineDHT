@@ -14,6 +14,11 @@ class AsyncProcessor
     @queue.push(arg)
   end
 
+  def clear
+    @proc_thread.kill
+    @queue.clear
+  end
+
   def start
     @proc_thread = Thread.new do 
       loop do
