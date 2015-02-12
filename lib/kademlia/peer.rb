@@ -16,9 +16,7 @@ class Peer
   attr_reader :port
   attr_reader :hashed_info
   attr_reader :local_peer_id
-  attr_reader :msg_proc_thread
-  attr_reader :read_thread
-  attr_reader :write_thread
+  attr_reader :socket
 
   @@dht_bitmask = 0x0000000000000001
   @@request_sample_size = 1
@@ -31,9 +29,7 @@ class Peer
     @port = port
     @hashed_info = hashed_info
     @local_peer_id = local_peer_id
-    @socket = PeerSocket.open(self)
-    @msg_recv_queue = Queue.new
-    @msg_send_queue = Queue.new
+    @socket = PeerSocket.open(logger, self)
   end
 
   def ==(another_peer)
@@ -62,13 +58,8 @@ class Peer
     return @handshake_response
   end
 
-  def read_next_message
-    @socket.read
-  end
-
   def write(message)
-    @msg_send_queue.push(message)
-    @logger.debug "#{address} Write queue size: #{@msg_send_queue.length}"
+    @socket.write_async(message)
   end
 
   def join(swarm)
@@ -81,17 +72,10 @@ class Peer
     write(@swarm.block_directory.bitfield)
     @respond_machine = PeerRespondStateMachine.new(self)
     @send_machine = PeerSendStateMachine.new(self)
-    start_msg_processing_thread
-    start_read_thread
-    start_write_thread
   end
 
   def disconnect
-    stop_read_thread
-    stop_msg_processing_thread
-    stop_write_thread
-    @msg_recv_queue = Queue.new
-    @msg_send_queue = Queue.new
+    @socket.close
   end
 
   def process_read_msg(msg)
@@ -132,61 +116,6 @@ class Peer
     else
       @logger.debug "#{address} Write dropping #{msg.class}"
     end
-  end
-
-  def start_msg_processing_thread
-    @logger.debug "#{address} Starting the message processing thread"
-
-    @msg_proc_thread = Thread.new do
-      loop do
-	process_read_msg(@msg_recv_queue.pop)
-      end
-    end
-  end
-
-  def stop_msg_processing_thread
-    @logger.debug "#{address} Stopping the message processing thread"
-    Thread.kill(@msg_proc_thread)
-  end
-
-  def start_read_thread
-    @logger.debug "#{address} Starting the read thread"
-
-    @read_thread = Thread.new do
-      loop do
-	msg = read_next_message
-	@logger.debug "#{address} Received #{msg.class}"
-	@msg_recv_queue.push(msg)
-      end
-    end
-  end
-
-  def stop_read_thread
-    @logger.debug "#{address} Stopping the read thread"
-    Thread.kill(@read_thread)
-  end
-
-  def start_write_thread
-    @logger.debug "#{address} Starting the write thread"
-
-    @write_thread = Thread.new do
-      loop do
-	begin
-	  msg = @msg_send_queue.pop
-	  @logger.debug "#{address} Writing #{msg.class}"
-	  @socket.write(msg)
-	  process_write_msg(msg)
-	rescue Exception => e
-	  @logger.debug "#{address} Write thread caught exception #{e}"
-	  raise
-	end
-      end
-    end
-  end
-
-  def stop_write_thread
-    @logger.debug "#{address} Stopping the write thread"
-    Thread.kill(@write_thread)
   end
 
   def get_next_request(sample_size = @@request_sample_size)

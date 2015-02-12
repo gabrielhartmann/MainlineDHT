@@ -1,3 +1,4 @@
+require 'timeout'
 require_relative 'test_helper'
 require_relative 'metainfo_test_helper'
 require_relative 'peer_test_helper'
@@ -61,13 +62,20 @@ describe Swarm do
 
   it "can download a piece" do
     s = Swarm.default
-    completed_piece_count = s.block_directory.completed_pieces.length
-    s.start
+    bitfield_name = s.torrent_file + ".part.bitfield"
+    bitfield_last_modified = File.mtime(bitfield_name)
 
-    while(s.block_directory.completed_pieces.length <= completed_piece_count) 
-      sleep(2)
+    swarm_thread = Thread.new do
+      s.start
     end
 
-    s.stop
+    Timeout::timeout(60) do
+      loop do
+	break if File.mtime(bitfield_name) - bitfield_last_modified > 0
+	sleep(1)
+      end
+    end
+
+    swarm_thread.kill
   end
 end

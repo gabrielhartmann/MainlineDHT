@@ -53,4 +53,4 @@ ubuntu-12.04.5-alternate-amd64.iso.part
 *ubuntu.torrent.part
 
 # ignore log files
-*.log
+*.log*

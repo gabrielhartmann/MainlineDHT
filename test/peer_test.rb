@@ -67,40 +67,4 @@ describe Peer do
     s.block_directory.clear_piece_peers(piece_index)
     p.is_interesting?.must_equal false
   end
-
-  it "must be able to connect and disconnect from a peer" do
-    s = Swarm.default
-    p = Peer.default
-    p.join(s)
-    p.connect
-
-    p.msg_proc_thread.alive?.must_equal true 
-    p.read_thread.alive?.must_equal true
-    p.write_thread.alive?.must_equal true
-
-    sleep(5)
-    p.disconnect
-
-    p.msg_proc_thread.stop?.must_equal true 
-    p.read_thread.stop?.must_equal true 
-    p.write_thread.stop?.must_equal true 
-
-    s.block_directory.clear
-  end
-
-  it "must be able to read messages from the wire" do
-  #   peer_count = [Peer.default_peers.length, 5].min
-  #   peers = Peer.default_peers[0..peer_count-1]
-  #   peers.each do |p|
-  #      begin
-  #        puts "ip: #{p.ip} port: #{p.port}"
-  #        p.shake_hands
-  #        message = p.read_next_message
-  #        puts message.class
-  #      rescue StandardError => e
-  #        puts e.inspect
-  #      end
-  #    end
-  end
-
 end

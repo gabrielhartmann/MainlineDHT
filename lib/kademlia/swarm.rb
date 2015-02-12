@@ -1,4 +1,4 @@
-require 'logger'
+require 'mono_logger'
 require_relative 'metainfo'
 require_relative 'torrent_file_io'
 require_relative 'tracker'
@@ -9,10 +9,12 @@ class Swarm
   attr_reader :metainfo
   attr_reader :peers
   attr_reader :block_directory
+  attr_reader :torrent_file
 
   def initialize(torrent_file, log_level = Logger::DEBUG)
-    @logger = Logger.new('swarm.log', 10, 1024000)
+    @logger = MonoLogger.new('swarm.log', 10, 1024000)
     @logger.level = log_level
+    @torrent_file = torrent_file
     @peer_id = (0...20).map { ('a'..'z').to_a[rand(26)] }.join
     @metainfo = Metainfo.new(torrent_file)
     @torrent_file_io = TorrentFileIO.new(@logger, @metainfo, torrent_file + ".part")
@@ -29,8 +31,8 @@ class Swarm
 	peer.join(self)
 	peer.connect
 	@started_peers << peer
-      rescue
-	@logger.info "Failed to connect to #{peer}" 
+      rescue Exception => e
+	@logger.info "Failed to connect to #{peer} with exception: #{e}" 
       end
     end
   end

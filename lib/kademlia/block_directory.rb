@@ -184,7 +184,7 @@ class BlockDirectory
 
   def complete_piece(index)
     write_bitfield
-    swarm.broadcast(HaveMessage.Create(index)) if swarm
+    @swarm.broadcast(HaveMessage.Create(index)) if @swarm
   end
 
   def add_peer_to_piece(index, peer)

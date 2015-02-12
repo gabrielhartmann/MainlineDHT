@@ -22,4 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "bencode", "~> 0.8.2"
   spec.add_development_dependency "workflow", "~> 1.2.0"
+  spec.add_development_dependency "mono_logger", "~> 1.1.0"
 end
